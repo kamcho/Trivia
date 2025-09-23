@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}About - BibleTrivia{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Hero Section -->
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-white mb-4">
+            <i class="fas fa-cross text-indigo-400 mr-3"></i>
+            About BibleTrivia
+        </h1>
+        <p class="text-gray-400 text-lg max-w-3xl mx-auto">
+            A comprehensive platform for churches to engage in Bible trivia competitions, 
+            build community, and deepen their understanding of Scripture through friendly competition.
+        </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 text-center">
+            <div class="mx-auto h-16 w-16 bg-indigo-600/20 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-church text-2xl text-indigo-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-white mb-2">{{ total_churches }}</div>
+            <div class="text-gray-400">Churches</div>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 text-center">
+            <div class="mx-auto h-16 w-16 bg-green-600/20 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-users text-2xl text-green-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-white mb-2">{{ total_groups }}</div>
+            <div class="text-gray-400">Trivia Groups</div>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 text-center">
+            <div class="mx-auto h-16 w-16 bg-yellow-600/20 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-question-circle text-2xl text-yellow-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-white mb-2">{{ total_questions }}</div>
+            <div class="text-gray-400">Questions</div>
+        </div>
+        
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 text-center">
+            <div class="mx-auto h-16 w-16 bg-purple-600/20 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-trophy text-2xl text-purple-400"></i>
+            </div>
+            <div class="text-3xl font-bold text-white mb-2">{{ total_competitions }}</div>
+            <div class="text-gray-400">Competitions</div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50">
+        <h2 class="text-2xl font-semibold text-white mb-6 text-center">Platform Features</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-users text-2xl text-blue-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Group Management</h3>
+                <p class="text-gray-400 text-sm">Create and manage trivia groups with members, captains, and patrons</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-green-600/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-question-circle text-2xl text-green-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Question Bank</h3>
+                <p class="text-gray-400 text-sm">Extensive database of Bible trivia questions across different categories</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-yellow-600/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-trophy text-2xl text-yellow-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Competitions</h3>
+                <p class="text-gray-400 text-sm">Organize and participate in trivia competitions with scoring and leaderboards</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-purple-600/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-church text-2xl text-purple-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Church Integration</h3>
+                <p class="text-gray-400 text-sm">Connect groups to their churches and track performance</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-red-600/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-chart-line text-2xl text-red-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Analytics</h3>
+                <p class="text-gray-400 text-sm">Track performance, scores, and competition statistics</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-indigo-600/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-mobile-alt text-2xl text-indigo-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-2">Mobile Friendly</h3>
+                <p class="text-gray-400 text-sm">Responsive design that works on all devices</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mission Statement -->
+    <div class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 backdrop-blur-sm rounded-xl p-8 border border-indigo-700/50">
+        <h2 class="text-2xl font-semibold text-white mb-4 text-center">Our Mission</h2>
+        <p class="text-gray-300 text-center text-lg leading-relaxed">
+            To strengthen Christian communities through engaging Bible trivia competitions that promote 
+            fellowship, learning, and spiritual growth. We believe that friendly competition can deepen 
+            our understanding of Scripture while building stronger connections within and between churches.
+        </p>
+    </div>
+
+    <!-- How It Works -->
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50">
+        <h2 class="text-2xl font-semibold text-white mb-6 text-center">How It Works</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="mx-auto h-20 w-20 bg-indigo-600 rounded-full flex items-center justify-center mb-4 text-white font-bold text-2xl">1</div>
+                <h3 class="text-lg font-semibold text-white mb-2">Register Your Church</h3>
+                <p class="text-gray-400 text-sm">Churches register on the platform and create their profile</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-20 w-20 bg-green-600 rounded-full flex items-center justify-center mb-4 text-white font-bold text-2xl">2</div>
+                <h3 class="text-lg font-semibold text-white mb-2">Form Groups</h3>
+                <p class="text-gray-400 text-sm">Create trivia groups with members, captains, and patrons</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="mx-auto h-20 w-20 bg-yellow-600 rounded-full flex items-center justify-center mb-4 text-white font-bold text-2xl">3</div>
+                <h3 class="text-lg font-semibold text-white mb-2">Compete & Learn</h3>
+                <p class="text-gray-400 text-sm">Participate in competitions and track your progress</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center">
+        <h2 class="text-2xl font-semibold text-white mb-4">Ready to Get Started?</h2>
+        <p class="text-gray-400 mb-6">Join the BibleTrivia community and start your journey today</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'church-create' %}" class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors">
+                <i class="fas fa-church mr-2"></i>
+                Register Your Church
+            </a>
+            <a href="{% url 'group-create' %}" class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg transition-colors">
+                <i class="fas fa-users mr-2"></i>
+                Create a Group
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

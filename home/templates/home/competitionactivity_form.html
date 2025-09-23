@@ -1,0 +1,308 @@
+{% extends 'home/competition/base.html' %}
+
+{% block breadcrumb %}
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <a href="{% url 'competitionactivity_list' %}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Activities</a>
+</li>
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <span class="text-sm font-medium text-gray-400">
+        {% if form.instance.pk %}Edit{% else %}New{% endif %} Activity
+    </span>
+</li>
+{% endblock %}
+
+{% block header_title %}
+    {% if form.instance.pk %}Edit{% else %}Create New{% endif %} Activity
+{% endblock %}
+
+{% block header_subtitle %}
+    {% if form.instance.pk %}
+        Update the details of this competition activity
+    {% else %}
+        Add a new activity for your competitions
+    {% endif %}
+{% endblock %}
+
+{% block header_actions %}
+<a href="{% if form.instance.pk %}{% url 'competitionactivity_detail' slug=form.instance.slug %}{% else %}{% url 'competitionactivity_list' %}{% endif %}" 
+   class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors">
+    <i class="fas fa-arrow-left mr-2"></i> Back
+</a>
+{% endblock %}
+
+{% block competition_content %}
+<div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="bg-red-900/30 border border-red-700/50 text-red-200 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <p class="font-medium">Please correct the errors below</p>
+            </div>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Basic Information Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-indigo-400 mr-2"></i>
+                        Basic Information
+                    </h3>
+                    
+                    <!-- Name Field -->
+                    <div class="mb-4">
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                            {{ form.name.label }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            {{ form.name }}
+                            {% if form.name.help_text %}
+                            <div class="mt-1 text-xs text-gray-400">{{ form.name.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Activity Type -->
+                        <div>
+                            <label for="{{ form.activity_type.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                                {{ form.activity_type.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                {{ form.activity_type }}
+                            </div>
+                            {% if form.activity_type.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.activity_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Points -->
+                        <div>
+                            <label for="{{ form.points.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                                {{ form.points.label }}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-star text-amber-400"></i>
+                                </div>
+                                {{ form.points }}
+                            </div>
+                            {% if form.points.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.points.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Categories -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            {{ form.categories.label }}
+                        </label>
+                        {{ form.categories }}
+                        {% if form.categories.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.categories.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mt-4">
+                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                            {{ form.description.label }}
+                        </label>
+                        <div class="relative">
+                            {{ form.description }}
+                            {% if form.description.help_text %}
+                            <div class="mt-1 text-xs text-gray-400">{{ form.description.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% if form.description.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.description.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Instructions Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-list-ol text-indigo-400 mr-2"></i>
+                        Instructions & Rules
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Instructions -->
+                        <div>
+                            <label for="{{ form.instructions.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                                {{ form.instructions.label }}
+                            </label>
+                            <div class="relative">
+                                {{ form.instructions }}
+                                {% if form.instructions.help_text %}
+                                <div class="mt-1 text-xs text-gray-400">{{ form.instructions.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% if form.instructions.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.instructions.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Rules -->
+                        <div>
+                            <label for="{{ form.rules.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                                {{ form.rules.label }}
+                            </label>
+                            <div class="relative">
+                                {{ form.rules }}
+                                {% if form.rules.help_text %}
+                                <div class="mt-1 text-xs text-gray-400">{{ form.rules.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% if form.rules.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.rules.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Status Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-toggle-on text-indigo-400 mr-2"></i>
+                        Status & Visibility
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Is Active Toggle -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label for="{{ form.is_active.id_for_label }}" class="block text-sm font-medium text-gray-300">
+                                    Active
+                                </label>
+                                <p class="text-xs text-gray-400">Make this activity available for competitions</p>
+                            </div>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                {{ form.is_active }}
+                                <label for="{{ form.is_active.id_for_label }}" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        {% if form.is_active.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.is_active.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Manage Instructions & Rules Links -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-tools text-indigo-400 mr-2"></i>
+                        Manage Instructions & Rules
+                    </h3>
+                    <div class="space-y-3">
+                        <a href="{% if form.instance.pk %}{% url 'competitionactivity_instructions_update' slug=form.instance.slug %}{% else %}#{% endif %}"
+                           class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors {% if not form.instance.pk %}opacity-50 cursor-not-allowed{% endif %}">
+                            <i class="fas fa-list-ol mr-2"></i>
+                            Edit Instructions
+                        </a>
+                        <a href="{% if form.instance.pk %}{% url 'competitionactivity_rules_update' slug=form.instance.slug %}{% else %}#{% endif %}"
+                           class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors {% if not form.instance.pk %}opacity-50 cursor-not-allowed{% endif %}">
+                            <i class="fas fa-gavel mr-2"></i>
+                            Edit Rules
+                        </a>
+                        {% if not form.instance.pk %}
+                        <p class="text-xs text-slate-400">Save the activity first to manage instructions and rules.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="flex justify-between items-center pt-6 border-t border-slate-700/50 mt-8">
+            <div>
+                {% if form.instance.pk %}
+                <p class="text-xs text-gray-400">
+                    Last updated {{ form.instance.updated_at|timesince }} ago
+                    {% if form.instance.updated_by %}
+                    by {{ form.instance.updated_by.get_full_name|default:form.instance.updated_by.username }}
+                    {% endif %}
+                </p>
+                {% endif %}
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% if form.instance.pk %}{% url 'competitionactivity_detail' slug=form.instance.slug %}{% else %}{% url 'competitionactivity_list' %}{% endif %}" 
+                   class="px-4 py-2 border border-slate-600 text-sm font-medium rounded-lg text-gray-300 hover:bg-slate-700/50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    {% if form.instance.pk %}Update{% else %}Create{% endif %} Activity
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Toggle Switch Styling -->
+<style>
+.toggle-checkbox:checked {
+    right: 0;
+    border-color: #6366f1;
+    background-color: #6366f1;
+}
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #6366f1;
+}
+</style>
+
+<!-- JavaScript for icon preview and slug generation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Icon preview
+    const iconField = document.getElementById('{{ form.icon.id_for_label }}');
+    const iconPreview = document.querySelector('.fa-{{ form.icon.value|default:"tasks" }}');
+    
+    if (iconField && iconPreview) {
+        iconField.addEventListener('input', function() {
+            const iconValue = this.value || 'tasks';
+            iconPreview.className = `fas fa-${iconValue} ml-1 text-indigo-400`;
+        });
+    }
+    
+    // Auto-slug generation from name
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const slugField = document.getElementById('{{ form.slug.id_for_label }}');
+    
+    if (nameField && slugField && !slugField.value) {
+        nameField.addEventListener('blur', function() {
+            if (!slugField.value) {
+                const slug = this.value
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/--+/g, '-');
+                slugField.value = slug;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

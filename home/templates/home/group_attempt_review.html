@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Review Group Attempt · {{ quiz.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Group Review: {{ quiz.name }}</h1>
+      <p class="text-slate-400">Group: <a class="text-indigo-400 hover:text-indigo-300" href="{% url 'group_detail' slug=group.slug %}">{{ group.name }}</a></p>
+      <p class="text-slate-400">Attempt #{{ attempt.attempt_number }} • {{ attempt.created_at|date:'Y-m-d H:i' }}</p>
+    </div>
+    <div class="text-right">
+      <div class="text-slate-200 text-xl font-semibold">Score: {{ attempt.score }}/{{ quiz.total_points|default:quiz.calculate_total_points }}</div>
+      <a href="{% url 'group_attempt_history' %}" class="inline-flex items-center mt-2 px-3 py-1.5 rounded-md border border-slate-600 text-slate-200 hover:bg-slate-700/50 text-sm">Back to group attempts</a>
+    </div>
+  </div>
+
+  {% if items %}
+  <div class="space-y-5">
+    {% for item in items %}
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="text-sm text-slate-400 mb-1">Question {{ forloop.counter }}</div>
+          <div class="text-slate-100 font-medium">{{ item.question.question_text }}</div>
+          {% if item.responded_by %}
+          <div class="text-xs text-slate-400 mt-1">Responded by: {{ item.responded_by.get_full_name|default:item.responded_by.email }}</div>
+          {% endif %}
+        </div>
+        {% if item.is_correct is not None %}
+        {% if item.is_correct %}
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-900/30 text-emerald-300 border border-emerald-700/50">Correct</span>
+        {% else %}
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-900/30 text-rose-300 border border-rose-700/50">Incorrect</span>
+        {% endif %}
+        {% else %}
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700/40 text-slate-300 border border-slate-600/50">Open-ended</span>
+        {% endif %}
+      </div>
+
+      <div class="mt-4 grid gap-2">
+        {% if item.question.question_type == 'open' %}
+          <div class="text-sm text-slate-300"><span class="text-slate-400">Group answer:</span> {{ item.text_answer|default:"—" }}</div>
+        {% else %}
+          {% for ch in item.question.choices.all %}
+            {% with is_selected=ch.id in item.selected_ids is_correct=ch.id in item.correct_ids %}
+            <div class="flex items-center gap-3 p-2 rounded-lg border {{ is_correct|yesno:'border-emerald-600/40,border-slate-700/40' }} {{ is_selected|yesno:'bg-slate-700/40,' }}">
+              <div class="w-5 h-5 rounded border {{ is_selected|yesno:'border-indigo-400 bg-indigo-500/30,border-slate-500' }}"></div>
+              <div class="flex-1 text-sm {{ is_correct|yesno:'text-emerald-300,text-slate-200' }}">{{ ch.choice_text }}</div>
+              {% if is_correct %}<span class="text-emerald-300 text-xs">correct</span>{% endif %}
+              {% if is_selected and not is_correct %}<span class="text-rose-300 text-xs">selected</span>{% endif %}
+            </div>
+            {% endwith %}
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="mt-4 flex items-center gap-4 text-sm">
+        <div class="text-slate-300">Points: <span class="font-semibold text-white">{{ item.points_awarded }}</span> / {{ item.question_points }}</div>
+        {% if item.metadata.wrong_selected %}
+        <div class="text-slate-400">Wrong selections: {{ item.metadata.wrong_selected }}</div>
+        {% endif %}
+        {% if item.metadata.question_penalty %}
+        <div class="text-slate-400">Penalty per wrong: {{ item.metadata.question_penalty }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-slate-400">No responses recorded for this group attempt.</p>
+  {% endif %}
+</div>
+{% endblock %}

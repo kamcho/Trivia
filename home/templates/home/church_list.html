@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}Churches - Bible Trivia{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-slate-100 mb-4">Churches</h1>
+        <p class="text-slate-400 text-lg">Discover churches participating in Bible Trivia competitions</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-slate-800/50 rounded-xl p-6 mb-8 border border-slate-700/30">
+        <form method="get" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search Input -->
+                <div class="md:col-span-2">
+                    <label for="search" class="block text-sm font-medium text-slate-300 mb-2">Search Churches</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <input type="text" 
+                               id="search" 
+                               name="search" 
+                               value="{{ search_query }}"
+                               placeholder="Search by name, city, location, or denomination..."
+                               class="w-full pl-10 pr-4 py-3 bg-slate-700 text-slate-200 border border-slate-600 rounded-lg focus:border-purple-500 focus:ring-1 focus:ring-purple-500 placeholder-slate-400">
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div>
+                    <label for="category" class="block text-sm font-medium text-slate-300 mb-2">Denomination</label>
+                    <select name="category" 
+                            id="category"
+                            class="w-full px-4 py-3 bg-slate-700 text-slate-200 border border-slate-600 rounded-lg focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
+                        <option value="">All Denominations</option>
+                        {% for category_name, category_slug in categories %}
+                            <option value="{{ category_slug }}" {% if category_filter == category_slug %}selected{% endif %}>
+                                {{ category_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Location Filter -->
+                <div>
+                    <label for="location" class="block text-sm font-medium text-slate-300 mb-2">Location</label>
+                    <select name="location" 
+                            id="location"
+                            class="w-full px-4 py-3 bg-slate-700 text-slate-200 border border-slate-600 rounded-lg focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
+                        <option value="">All Locations</option>
+                        {% for location in locations %}
+                            <option value="{{ location }}" {% if location_filter == location %}selected{% endif %}>
+                                {{ location }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-700/30">
+                <button type="submit" 
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Search
+                </button>
+                
+                <a href="{% url 'church_list' %}" 
+                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center">
+                    Clear Filters
+                </a>
+                
+                <a href="{% url 'church-create' %}" 
+                   class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center flex items-center gap-2 sm:ml-auto">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add Church
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <p class="text-slate-400">
+                {% if search_query or category_filter or location_filter %}
+                    Showing {{ total_churches }} result{{ total_churches|pluralize }} 
+                    {% if search_query %}for "{{ search_query }}"{% endif %}
+                {% else %}
+                    {{ total_churches }} church{{ total_churches|pluralize }} found
+                {% endif %}
+            </p>
+            
+            {% if is_paginated %}
+                <p class="text-slate-400 text-sm">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Churches Grid -->
+    {% if churches %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for church in churches %}
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/30 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
+                    <!-- Church Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-slate-100 mb-2">
+                                <a href="{% url 'church-detail' slug=church.slug %}" class="hover:text-purple-400 transition-colors">
+                                    {{ church.name }}
+                                </a>
+                            </h3>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs font-medium rounded-full">
+                                    {{ church.category.name }}
+                                </span>
+                                {% if church.established_year %}
+                                    <span class="text-slate-400 text-xs">Est. {{ church.established_year }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if church.logo %}
+                            <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-700 flex-shrink-0">
+                                <img src="{{ church.logo.url }}" alt="{{ church.name }} logo" class="w-full h-full object-cover">
+                            </div>
+                        {% else %}
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Church Details -->
+                    <div class="space-y-2 mb-4">
+                        {% if church.city or church.location %}
+                            <div class="flex items-center gap-2 text-slate-400 text-sm">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span>{{ church.city }}{% if church.city and church.location %}, {% endif %}{{ church.location }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if church.contact_email %}
+                            <div class="flex items-center gap-2 text-slate-400 text-sm">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span>{{ church.contact_email }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if church.phone_number %}
+                            <div class="flex items-center gap-2 text-slate-400 text-sm">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                                <span>{{ church.phone_number }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Trivia Groups Count -->
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-700/30">
+                        <div class="flex items-center gap-2 text-slate-400 text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <span>{{ church.trivia_groups.count }} team{{ church.trivia_groups.count|pluralize }}</span>
+                        </div>
+                        
+                        <a href="{% url 'church-detail' slug=church.slug %}" 
+                           class="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors">
+                            View Details →
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="flex justify-center">
+                <nav class="flex items-center gap-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if location_filter %}location={{ location_filter }}&{% endif %}page=1" 
+                           class="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+                            First
+                        </a>
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if location_filter %}location={{ location_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+                           class="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span class="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium">
+                        {{ page_obj.number }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if location_filter %}location={{ location_filter }}&{% endif %}page={{ page_obj.next_page_number }}" 
+                           class="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+                            Next
+                        </a>
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if category_filter %}category={{ category_filter }}&{% endif %}{% if location_filter %}location={{ location_filter }}&{% endif %}page={{ page_obj.paginator.num_pages }}" 
+                           class="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+                            Last
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- No Results -->
+        <div class="text-center py-16">
+            <div class="w-24 h-24 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-12 h-12 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-300 mb-2">No Churches Found</h3>
+            <p class="text-slate-400 mb-6">
+                {% if search_query or category_filter or location_filter %}
+                    Try adjusting your search criteria or clearing the filters.
+                {% else %}
+                    No churches have been registered yet.
+                {% endif %}
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                {% if search_query or category_filter or location_filter %}
+                    <a href="{% url 'church_list' %}" 
+                       class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        Clear Filters
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'church-create' %}" 
+                   class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add First Church
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

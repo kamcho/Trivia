@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ question.question_text|truncatechars:50 }} - Bible Trivia{% endblock %}
+
+{% block content %}
+<div class="min-h-screen ">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                <div class="flex-1">
+                    <nav class="text-sm text-slate-400 mb-2">
+                        <a href="{% url 'question_list' %}" class="hover:text-indigo-400 transition-colors">Questions</a>
+                        <span class="mx-2">/</span>
+                        <span class="text-slate-200">Question Details</span>
+                    </nav>
+                    <h1 class="text-3xl font-bold text-white mb-2">Question Details</h1>
+                </div>
+                {% if can_edit %}
+                <div class="flex space-x-3 mt-4 md:mt-0">
+                    <a href="{% url 'question_update' question.pk %}" 
+                       class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-edit mr-2"></i>Edit
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-8">
+                <!-- Question Text -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-semibold text-white mb-4">{{ question.question_text }}</h2>
+                    
+                    <!-- Tags -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for cat in question.categories.all %}
+                        <span class="px-3 py-1 rounded-full bg-indigo-600/20 text-indigo-300 text-sm">
+                            <i class="fas fa-folder mr-1"></i>{{ cat.name }}
+                        </span>
+                        {% endfor %}
+                        <span class="px-3 py-1 rounded-full bg-purple-600/20 text-purple-300 text-sm">
+                            <i class="fas fa-signal mr-1"></i>{{ question.difficulty }}
+                        </span>
+                        <span class="px-3 py-1 rounded-full bg-green-600/20 text-green-300 text-sm">
+                            <i class="fas fa-users mr-1"></i>{{ question.level }}
+                        </span>
+                        <span class="px-3 py-1 rounded-full bg-yellow-600/20 text-yellow-300 text-sm">
+                            <i class="fas fa-star mr-1"></i>{{ question.points }} point{{ question.points|pluralize }}
+                        </span>
+                        {% if question.is_active %}
+                        <span class="px-3 py-1 rounded-full bg-green-600/20 text-green-300 text-sm">
+                            <i class="fas fa-check-circle mr-1"></i>Active
+                        </span>
+                        {% else %}
+                        <span class="px-3 py-1 rounded-full bg-red-600/20 text-red-300 text-sm">
+                            <i class="fas fa-times-circle mr-1"></i>Inactive
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Bible Reference -->
+                {% if question.bible_reference %}
+                <div class="bg-slate-700/30 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">
+                        <i class="fas fa-book text-indigo-400 mr-2"></i>Bible Reference
+                    </h3>
+                    <p class="text-slate-300">{{ question.bible_reference }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Explanation -->
+                {% if question.explanation %}
+                <div class="bg-slate-700/30 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-2">
+                        <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>Explanation
+                    </h3>
+                    <p class="text-slate-300">{{ question.explanation }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Question Meta -->
+                <div class="border-t border-slate-700/50 pt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-slate-400 mb-1">Created By</h4>
+                            <p class="text-white">{{ question.created_by.get_full_name|default:question.created_by.email }}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-slate-400 mb-1">Created On</h4>
+                            <p class="text-white">{{ question.created_at|date:"F d, Y" }}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-slate-400 mb-1">Last Updated</h4>
+                            <p class="text-white">{{ question.updated_at|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Choices Section -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-white">
+                        <i class="fas fa-list-ul text-indigo-400 mr-2"></i>Choices
+                    </h3>
+                    {% if can_edit %}
+                    <a href="{% url 'choice_create' question_pk=question.pk %}" 
+                       class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                        <i class="fas fa-plus mr-1"></i>Add Choice
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if choices %}
+                <div class="space-y-3">
+                    {% for choice in choices %}
+                    <div class="{% if choice.is_correct %}bg-green-900/30 border-green-700{% else %}bg-slate-700/30 border-slate-700{% endif %} rounded-lg p-4 border hover:shadow-lg transition-all">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full {% if choice.is_correct %}bg-green-600/20 text-green-300{% else %}bg-slate-600/20 text-slate-300{% endif %} flex items-center justify-center mr-3 mt-0.5">
+                                {% if choice.is_correct %}
+                                <i class="fas fa-check"></i>
+                                {% else %}
+                                <span class="text-sm font-medium">{{ forloop.counter }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-slate-200">{{ choice.choice_text }}</p>
+                                {% if choice.explanation %}
+                                <div class="mt-2 text-sm text-slate-400 bg-slate-800/50 p-2 rounded">
+                                    <i class="fas fa-info-circle mr-1"></i> {{ choice.explanation }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if can_edit %}
+                            <div class="ml-4 flex space-x-2">
+                                <a href="#" class="text-slate-400 hover:text-indigo-400 transition-colors" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" class="text-slate-400 hover:text-red-400 transition-colors" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-6">
+                    <div class="text-slate-400 mb-4">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No choices added yet.</p>
+                    </div>
+                    {% if can_edit %}
+                    <a href="{% url 'choice_create' question_pk=question.pk %}" 
+                       class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add the first choice
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Related Questions -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    <i class="fas fa-list mr-2"></i>Related Questions
+                </h3>
+                {% if related_questions %}
+                <div class="space-y-3">
+                    {% for related in related_questions %}
+                    <div class="bg-slate-700/30 rounded-lg p-3 hover:bg-slate-700/50 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1 mr-4">
+                                <h4 class="text-white font-medium mb-1">
+                                    <a href="{% url 'question_detail' related.pk %}" class="hover:text-indigo-400 transition-colors">
+                                        {{ related.question_text|truncatechars:80 }}
+                                    </a>
+                                </h4>
+                                <div class="flex space-x-2 text-xs">
+                                    <span class="px-2 py-1 rounded bg-purple-600/20 text-purple-300">{{ related.difficulty }}</span>
+                                    <span class="px-2 py-1 rounded bg-green-600/20 text-green-300">{{ related.level }}</span>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 text-sm">{{ related.points }}pts</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-slate-400 text-center py-4">No other questions in this category yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-center flex-wrap gap-4 mt-8">
+                <a href="{% url 'question_list' %}" 
+                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Questions
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'choice_create' question_pk=question.pk %}" 
+                   class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Add Choice
+                </a>
+                {% endif %}
+                {% if user.is_authenticated %}
+                <a href="{% url 'question_create' %}" 
+                   class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                    <i class="fas fa-plus mr-2"></i>Add Similar Question
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

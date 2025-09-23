@@ -1,0 +1,205 @@
+{% extends 'home/competition/base.html' %}
+
+{% block breadcrumb %}
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <span class="text-sm font-medium text-gray-400">Competitions</span>
+</li>
+{% endblock %}
+
+{% block header_title %}Competitions{% endblock %}
+{% block header_subtitle %}Manage your trivia competitions and events{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'competition_create' %}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-semibold transition-colors">
+    <i class="fas fa-plus mr-2"></i> New Competition
+</a>
+{% endblock %}
+
+{% block competition_content %}
+<div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+    <!-- Search and Filter -->
+    <div class="mb-6">
+        <form method="get" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" name="q" value="{{ search_query|default:'' }}" 
+                               class="bg-slate-700/50 border border-slate-600 text-white text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5" 
+                               placeholder="Search competitions...">
+                    </div>
+                </div>
+                
+                <div>
+                    <select name="status" class="bg-slate-700/50 border border-slate-600 text-white text-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                        <option value="">All Statuses</option>
+                        <option value="upcoming" {% if request.GET.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button type="submit" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors w-full">
+                        <i class="fas fa-filter mr-1"></i> Apply Filters
+                    </button>
+                    {% if request.GET.q or request.GET.status %}
+                    <a href="{% url 'competition_list' %}" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i class="fas fa-times mr-1"></i> Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Competitions List -->
+    {% if object_list %}
+    <div class="space-y-4">
+        {% for competition in object_list %}
+        <div class="bg-slate-800/30 hover:bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 transition-all hover:shadow-lg">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-xl bg-indigo-600/20 text-indigo-300 flex items-center justify-center text-xl mr-4">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-lg font-semibold text-white truncate">
+                                <a href="{% url 'competition_detail' slug=competition.slug %}" class="hover:text-indigo-400 transition-colors">
+                                    {{ competition.name }}
+                                </a>
+                            </h3>
+                            <div class="flex flex-wrap items-center mt-1">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2 mb-1
+                                    {% if competition.status == 'upcoming' %}bg-blue-900/30 text-blue-300
+                                    {% elif competition.status == 'active' %}bg-green-900/30 text-green-300
+                                    {% else %}bg-slate-700/50 text-slate-300{% endif %}">
+                                    <i class="fas {% if competition.status == 'upcoming' %}fa-clock{% elif competition.status == 'active' %}fa-play-circle{% else %}fa-check-circle{% endif %} mr-1"></i>
+                                    {{ competition.get_status_display }}
+                                </span>
+                                
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 mr-2 mb-1">
+                                    <i class="fas fa-calendar-day mr-1"></i>
+                                    {{ competition.start_date|date:"M d, Y" }}
+                                </span>
+                                
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 mr-2 mb-1">
+                                    <i class="fas fa-users mr-1"></i>
+                                    {{ competition.participants.count }} participants
+                                </span>
+                                
+                                {% if competition.activities.exists %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 mb-1">
+                                    <i class="fas fa-tasks mr-1"></i>
+                                    {{ competition.activities.count }} activities
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0 md:ml-4 flex-shrink-0">
+                    <a href="{% url 'competition_detail' slug=competition.slug %}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            
+            {% if competition.description %}
+            <div class="mt-3 pl-16">
+                <p class="text-sm text-gray-300 line-clamp-2">{{ competition.description }}</p>
+            </div>
+            {% endif %}
+            
+            {% if competition.activities.exists %}
+            <div class="mt-4 pt-4 border-t border-slate-700/50">
+                <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Activities</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% for activity in competition.activities.all|slice:":5" %}
+                    <a href="{% url 'competitionactivity_detail' slug=activity.slug %}" 
+                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 transition-colors">
+                        <i class="fas fa-{{ activity.icon|default:'tasks' }} mr-1.5 text-xs"></i>
+                        {{ activity.name }}
+                    </a>
+                    {% endfor %}
+                    {% if competition.activities.count > 5 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/50 text-slate-400">
+                        +{{ competition.activities.count|add:"-5" }} more
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-8 flex justify-center">
+        <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-700 bg-slate-800 text-sm font-medium text-gray-300 hover:bg-slate-700">
+                <span class="sr-only">First</span>
+                <i class="fas fa-angle-double-left h-5 w-5"></i>
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+               class="relative inline-flex items-center px-3 py-2 border border-slate-700 bg-slate-800 text-sm font-medium text-gray-300 hover:bg-slate-700">
+                <span class="sr-only">Previous</span>
+                <i class="fas fa-chevron-left h-4 w-4"></i>
+            </a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                   class="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-600 text-white text-sm font-medium">
+                    {{ num }}
+                </a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+                   class="relative inline-flex items-center px-4 py-2 border border-slate-700 bg-slate-800 text-sm font-medium text-gray-300 hover:bg-slate-700">
+                    {{ num }}
+                </a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+               class="relative inline-flex items-center px-3 py-2 border border-slate-700 bg-slate-800 text-sm font-medium text-gray-300 hover:bg-slate-700">
+                <span class="sr-only">Next</span>
+                <i class="fas fa-chevron-right h-4 w-4"></i>
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-700 bg-slate-800 text-sm font-medium text-gray-300 hover:bg-slate-700">
+                <span class="sr-only">Last</span>
+                <i class="fas fa-angle-double-right h-5 w-5"></i>
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-16">
+        <div class="text-gray-400 mb-4">
+            <i class="fas fa-trophy text-5xl mb-2"></i>
+            <p class="text-xl">No competitions found</p>
+        </div>
+        <p class="text-gray-500 mb-6 max-w-md mx-auto">
+            Get started by creating your first competition to organize trivia events and challenges.
+        </p>
+        <a href="{% url 'competition_create' %}" 
+           class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors">
+            <i class="fas fa-plus mr-2"></i> Create Competition
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

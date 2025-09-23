@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Results: {{ quiz.name }} - BibleTrivia{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Results Header -->
+        <div class="text-center mb-8">
+            <div class="mx-auto h-20 w-20 rounded-full {% if results.passed %}bg-green-600/20 text-green-400{% else %}bg-red-600/20 text-red-400{% endif %} flex items-center justify-center text-4xl mb-4">
+                {% if results.passed %}
+                <i class="fas fa-trophy"></i>
+                {% else %}
+                <i class="fas fa-times"></i>
+                {% endif %}
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Quiz Complete!</h1>
+            <p class="text-gray-400 text-lg">{{ quiz.name }}</p>
+        </div>
+
+        <!-- Score Card -->
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6">
+            <div class="text-center">
+                <div class="text-6xl font-bold {% if results.passed %}text-green-400{% else %}text-red-400{% endif %} mb-2">
+                    {{ results.percentage }}%
+                </div>
+                <div class="text-2xl font-semibold text-white mb-4">
+                    {% if results.passed %}
+                    Congratulations! You Passed!
+                    {% else %}
+                    Keep Studying!
+                    {% endif %}
+                </div>
+                
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                    <div class="bg-slate-800/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-white">{{ results.correct_answers }}</div>
+                        <div class="text-gray-400">Correct Answers</div>
+                    </div>
+                    <div class="bg-slate-800/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-white">{{ results.total_questions }}</div>
+                        <div class="text-gray-400">Total Questions</div>
+                    </div>
+                    <div class="bg-slate-800/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-white">{{ results.score }}</div>
+                        <div class="text-gray-400">Points Earned</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Results -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Performance Metrics -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                    <i class="fas fa-chart-bar text-indigo-400 mr-3"></i>
+                    Performance
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Accuracy</span>
+                        <span class="text-white font-medium">{{ results.percentage }}%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Correct Answers</span>
+                        <span class="text-white font-medium">{{ results.correct_answers }}/{{ results.total_questions }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Points Earned</span>
+                        <span class="text-white font-medium">{{ results.score }}/{{ results.total_points }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Passing Score</span>
+                        <span class="text-white font-medium">{{ quiz.passing_score }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Information -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-indigo-400 mr-3"></i>
+                    Quiz Details
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Quiz Name</span>
+                        <span class="text-white font-medium">{{ quiz.name }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Difficulty</span>
+                        <span class="text-white font-medium">{{ quiz.get_difficulty_display }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Type</span>
+                        <span class="text-white font-medium">{{ quiz.get_quiz_type_display }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Completed</span>
+                        <span class="text-white font-medium">{{ results.timestamp|date:"M d, Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Visualization -->
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 mb-8">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                <i class="fas fa-chart-pie text-indigo-400 mr-3"></i>
+                Score Breakdown
+            </h2>
+            <div class="space-y-4">
+                <!-- Accuracy Bar -->
+                <div>
+                    <div class="flex justify-between text-sm text-gray-400 mb-2">
+                        <span>Accuracy</span>
+                        <span>{{ results.percentage }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-3">
+                        <div class="bg-indigo-600 h-3 rounded-full transition-all duration-1000" style="width: {{ results.percentage }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- Pass/Fail Indicator -->
+                <div class="flex items-center justify-center mt-6">
+                    <div class="flex items-center px-6 py-3 rounded-lg {% if results.passed %}bg-green-900/30 text-green-300 border border-green-700/50{% else %}bg-red-900/30 text-red-300 border border-red-700/50{% endif %}">
+                        <i class="fas {% if results.passed %}fa-check-circle{% else %}fa-times-circle{% endif %} mr-2"></i>
+                        {% if results.passed %}
+                        Passed ({{ results.percentage }}% ≥ {{ quiz.passing_score }}%)
+                        {% else %}
+                        Failed ({{ results.percentage }}% < {{ quiz.passing_score }}%)
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'quiz_detail' slug=quiz.slug %}" 
+               class="inline-flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Quiz
+            </a>
+            {% if request.user.is_authenticated and results.attempt_id %}
+            <a href="{% if results.attempt_type == 'group' %}{% url 'group_attempt_review' pk=results.attempt_id %}{% else %}{% url 'attempt_review' pk=results.attempt_id %}{% endif %}"
+               class="inline-flex items-center px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors">
+                <i class="fas fa-eye mr-2"></i>
+                Review this Attempt
+            </a>
+            {% endif %}
+            <a href="{% url 'quiz_take' slug=quiz.slug %}" 
+               class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors">
+                <i class="fas fa-redo mr-2"></i>
+                Retake Quiz
+            </a>
+            <a href="{% url 'quiz_list' %}" 
+               class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg transition-colors">
+                <i class="fas fa-list mr-2"></i>
+                Browse Quizzes
+            </a>
+        </div>
+
+        <!-- Motivational Message -->
+        <div class="mt-8 text-center">
+            {% if results.passed %}
+            <div class="bg-green-900/20 border border-green-700/50 text-green-200 px-6 py-4 rounded-lg">
+                <i class="fas fa-star text-2xl mb-2"></i>
+                <p class="text-lg font-medium">Excellent work! You've mastered this quiz.</p>
+                <p class="text-sm mt-1">Keep up the great work and try more challenging quizzes!</p>
+            </div>
+            {% else %}
+            <div class="bg-blue-900/20 border border-blue-700/50 text-blue-200 px-6 py-4 rounded-lg">
+                <i class="fas fa-lightbulb text-2xl mb-2"></i>
+                <p class="text-lg font-medium">Don't give up! Every attempt is a learning opportunity.</p>
+                <p class="text-sm mt-1">Review the material and try again when you're ready.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Animate progress bars on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.bg-indigo-600');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if object %}Edit Question{% else %}Create Question{% endif %} - Bible Trivia
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen ">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    {% if object %}Edit Question{% else %}Create New Question{% endif %}
+                </h1>
+                <p class="text-slate-300">
+                    {% if object %}Update the question details{% else %}Add a new trivia question{% endif %}
+                </p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Categories Field -->
+                        <div>
+                            <label for="{{ form.categories.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                                Categories (select one or more) *
+                            </label>
+                            {{ form.categories }}
+                            {% if form.categories.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.categories.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Level Field -->
+                        <div>
+                            <label for="{{ form.level.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                                Target Level *
+                            </label>
+                            {{ form.level }}
+                            {% if form.level.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.level.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Question Text Field -->
+                    <div>
+                        <label for="{{ form.question_text.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                            Question Text *
+                        </label>
+                        {{ form.question_text }}
+                        {% if form.question_text.errors %}
+                            <div class="mt-1 text-red-400 text-sm">
+                                {% for error in form.question_text.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-slate-400">
+                            Write a clear, engaging question. Be specific and avoid ambiguity.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Difficulty Field -->
+                        <div>
+                            <label for="{{ form.difficulty.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                                Difficulty *
+                            </label>
+                            {{ form.difficulty }}
+                            {% if form.difficulty.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.difficulty.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Points Field -->
+                        <div>
+                            <label for="{{ form.points.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                                Points *
+                            </label>
+                            {{ form.points }}
+                            {% if form.points.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.points.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-slate-400">
+                                Points awarded for correct answer (1-10)
+                            </p>
+                        </div>
+
+                        <!-- Penalty Field -->
+                        <div>
+                            <label for="{{ form.penalty.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                                Penalty
+                            </label>
+                            {{ form.penalty }}
+                            {% if form.penalty.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.penalty.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-slate-400">
+                                For multiple-select: 0 = proportional credit (no penalty). >0 = deduct this per wrong selection.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Question Type Field -->
+                    <div>
+                        <label for="{{ form.question_type.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                            Question Type *
+                        </label>
+                        {{ form.question_type }}
+                        {% if form.question_type.errors %}
+                            <div class="mt-1 text-red-400 text-sm">
+                                {% for error in form.question_type.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-slate-400">
+                            Select whether this is a single-choice, multiple-select, or open-ended question
+                        </p>
+                    </div>
+
+                    <!-- Bible Reference Field -->
+                    <div>
+                        <label for="{{ form.bible_reference.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                            Bible Reference
+                        </label>
+                        {{ form.bible_reference }}
+                        {% if form.bible_reference.errors %}
+                            <div class="mt-1 text-red-400 text-sm">
+                                {% for error in form.bible_reference.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-slate-400">
+                            Optional: Reference to the Bible verse(s) this question is based on
+                        </p>
+                    </div>
+
+                    <!-- Explanation Field -->
+                    <div>
+                        <label for="{{ form.explanation.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                            Explanation
+                        </label>
+                        {{ form.explanation }}
+                        {% if form.explanation.errors %}
+                            <div class="mt-1 text-red-400 text-sm">
+                                {% for error in form.explanation.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-slate-400">
+                            Optional: Provide additional context or explanation for the correct answer
+                        </p>
+                    </div>
+
+                    <!-- Active Status -->
+                    <div class="flex items-center space-x-3">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-slate-200">
+                            Active Question
+                        </label>
+                        {% if form.is_active.errors %}
+                            <div class="text-red-400 text-sm">
+                                {% for error in form.is_active.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-slate-400 -mt-2">
+                        Inactive questions won't appear in trivia games
+                    </p>
+
+                    <!-- Form Actions -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                        <button type="submit" 
+                                class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
+                            <i class="fas fa-save mr-2"></i>
+                            {% if object %}Update Question{% else %}Create Question{% endif %}
+                        </button>
+                        
+                        <a href="{% url 'question_list' %}" 
+                           class="flex-1 bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors text-center">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Help Section -->
+            <div class="mt-8 bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-slate-700/30">
+                <h3 class="text-lg font-semibold text-white mb-4">
+                    <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                    Question Writing Tips
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-slate-200 mb-2">Good Questions:</h4>
+                        <ul class="space-y-1 text-slate-300 text-sm">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-400 mr-2 mt-0.5 text-xs"></i>
+                                Clear and unambiguous
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-400 mr-2 mt-0.5 text-xs"></i>
+                                Based on biblical facts
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-400 mr-2 mt-0.5 text-xs"></i>
+                                Appropriate for target level
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-400 mr-2 mt-0.5 text-xs"></i>
+                                Include Bible references when possible
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-slate-200 mb-2">Difficulty Guidelines:</h4>
+                        <ul class="space-y-1 text-slate-300 text-sm">
+                            <li><strong class="text-green-400">Easy:</strong> Basic biblical knowledge</li>
+                            <li><strong class="text-yellow-400">Medium:</strong> Requires some study</li>
+                            <li><strong class="text-red-400">Hard:</strong> Deep biblical understanding</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

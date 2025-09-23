@@ -1,0 +1,58 @@
+{# Prefer concrete fields over declared type to be resilient #}
+{% if item.image %}
+<figure class="rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900/40">
+    <img src="{{ item.image.url }}" alt="{{ item.title|default:'Image' }}" class="w-full h-48 object-cover">
+    {% if item.title or item.description %}
+    <figcaption class="p-3">
+        {% if item.title %}<p class="text-white text-sm font-medium">{{ item.title }}</p>{% endif %}
+        {% if item.description %}<p class="text-xs text-gray-400 mt-1">{{ item.description }}</p>{% endif %}
+    </figcaption>
+    {% endif %}
+    </figure>
+{% elif item.video %}
+<div class="rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900/40">
+    <video controls class="w-full h-48 object-cover" preload="metadata">
+        <source src="{{ item.video.url }}">
+        Your browser does not support the video tag.
+    </video>
+    {% if item.title or item.description %}
+    <div class="p-3">
+        {% if item.title %}<p class="text-white text-sm font-medium">{{ item.title }}</p>{% endif %}
+        {% if item.description %}<p class="text-xs text-gray-400 mt-1">{{ item.description }}</p>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% elif item.url %}
+<div class="rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900/40">
+    {# YouTube/Vimeo simple handling; otherwise use the URL directly #}
+    {% if 'youtube.com/watch' in item.url %}
+        {% with embed_url=item.url|cut:'watch?v='|add:'embed/' %}
+        <iframe src="{{ embed_url }}" class="w-full h-48" frameborder="0" allowfullscreen></iframe>
+        {% endwith %}
+    {% else %}
+        <iframe src="{{ item.url }}" class="w-full h-48" frameborder="0" allowfullscreen></iframe>
+    {% endif %}
+    {% if item.title or item.description %}
+    <div class="p-3">
+        {% if item.title %}<p class="text-white text-sm font-medium">{{ item.title }}</p>{% endif %}
+        {% if item.description %}<p class="text-xs text-gray-400 mt-1">{{ item.description }}</p>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="rounded-lg overflow-hidden border border-slate-700/50 bg-slate-900/40 p-3 text-sm text-gray-400">
+    Media unavailable
+    {% if item.title %}<span class="text-white"> — {{ item.title }}</span>{% endif %}
+    {% if request.user.is_staff %}
+    <div class="mt-2 text-xs">
+        <div>Debug:</div>
+        <div>type={{ item.media_type }}, has_image={{ item.image|yesno:'yes,no' }}, has_video={{ item.video|yesno:'yes,no' }}, has_url={{ item.url|yesno:'yes,no' }}</div>
+        {% if item.image %}<div>image url: <a href="{{ item.image.url }}" class="text-indigo-300 underline" target="_blank">{{ item.image.url }}</a></div>{% endif %}
+        {% if item.video %}<div>video url: <a href="{{ item.video.url }}" class="text-indigo-300 underline" target="_blank">{{ item.video.url }}</a></div>{% endif %}
+        {% if item.url %}<div>embed url: <a href="{{ item.url }}" class="text-indigo-300 underline" target="_blank">{{ item.url }}</a></div>{% endif %}
+    </div>
+    {% endif %}
+ </div>
+{% endif %}
+
+

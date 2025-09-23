@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}BibleTrivia{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .brand-badge { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 8px; font-weight: 800; }
+        .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s ease, transform .6s ease; }
+        .reveal.in { opacity: 1; transform: translateY(0); }
+    </style>
+    {% block extra_head %}{% endblock %}
+    {% load static %}
+    {% load user_extras %}
+    <!-- Add static file references here when configured -->
+    
+</head>
+<body class="min-h-screen text-slate-200 bg-gradient-to-b from-[#0b1224] to-slate-900">
+    <header class="sticky top-0 z-50 backdrop-blur bg-slate-900/60 border-b border-slate-700/30">
+        <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+            <a class="inline-flex items-center gap-2 font-bold tracking-tight" href="/">
+                <span class="brand-badge bg-indigo-600 text-white">BT</span>
+                <span>BibleTrivia</span>
+            </a>
+            <nav class="hidden sm:flex items-center gap-3">
+                <a class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md" href="/">Home</a>
+                
+                <!-- Churches Dropdown -->
+                <div class="relative group">
+                    <button class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                        Churches <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="{% url 'church_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">All Churches</a>
+                            <a href="{% url 'church-create' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Add Church</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions Dropdown -->
+                <div class="relative group">
+                    <button class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                        Questions <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="{% url 'question_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">All Questions</a>
+                            <a href="{% url 'question_create' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Add Question</a>
+                            <a href="{% url 'category_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Categories</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Competitions Dropdown -->
+                <div class="relative group">
+                    <button class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                        Competitions <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="{% url 'competition_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">All Competitions</a>
+                            <a href="{% url 'competition_create' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Create Competition</a>
+                            <a href="{% url 'competitionactivity_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Activities</a>
+                            <a href="{% url 'activitycategory_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Activity Categories</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Groups Dropdown -->
+                <div class="relative group">
+                    <button class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                        Groups <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="{% url 'group_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">All Groups</a>
+                            <a href="{% url 'group-create' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Create Group</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quizzes Dropdown -->
+                <div class="relative group">
+                    <button class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                        Quizzes <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="{% url 'quiz_list' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">All Quizzes</a>
+                            <a href="#quick-play" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Quick Play</a>
+                            <a href="#practice" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Practice Mode</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Play Dropdown -->
+                <div class="relative group">
+                    <button class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                        Play <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="#tournament" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Tournament</a>
+                            <div class="border-t border-slate-700 my-1"></div>
+                            <a href="{% url 'leaderboard' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Leaderboard</a>
+                            <a href="{% url 'about' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">About</a>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <!-- User Dropdown -->
+                    <div class="relative group ml-4 pl-4 border-l border-slate-700">
+                        <button class="text-slate-300 text-sm flex items-center gap-1 px-2 py-1 rounded-md hover:bg-slate-800">
+                            {{ user|display_name }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="absolute top-full right-0 mt-1 w-48 bg-slate-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-2">
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Profile</a>
+                                <a href="{% url 'profile_edit' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Edit Profile</a>
+                                <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Dashboard</a>
+                                <a href="{% url 'attempt_history' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">My Attempts</a>
+                                <div class="border-t border-slate-700 my-1"></div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="flex items-center gap-2 ml-4 pl-4 border-l border-slate-700">
+                        <a class="text-slate-400 hover:text-slate-100 px-3 py-2 rounded-md border border-slate-600 hover:border-slate-500 transition-colors" href="{% url 'login' %}">Login</a>
+                        <a class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-2 rounded-lg shadow-lg transition-colors" href="{% url 'signup' %}">Sign Up</a>
+                    </div>
+                {% endif %}
+            </nav>
+            
+            <!-- Mobile menu button -->
+            <div class="sm:hidden">
+                <button id="mobile-menu-button" class="text-slate-400 hover:text-slate-100 p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="sm:hidden hidden bg-slate-800 border-t border-slate-700">
+            <div class="px-4 py-2 space-y-1">
+                <a href="/" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Home</a>
+                <a href="{% url 'church_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Churches</a>
+                <a href="{% url 'question_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Questions</a>
+                <a href="{% url 'quiz_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Quizzes</a>
+                <a href="{% url 'competition_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Competitions</a>
+                <a href="{% url 'group-create' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Groups</a>
+                {% if user.is_authenticated %}
+                    <div class="border-t border-slate-700 my-2"></div>
+                    <a href="{% url 'profile' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Profile</a>
+                    <a href="{% url 'dashboard' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Dashboard</a>
+                    <a href="{% url 'attempt_history' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">My Attempts</a>
+                    <a href="{% url 'logout' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Logout</a>
+                {% else %}
+                    <div class="border-t border-slate-700 my-2"></div>
+                    <a href="{% url 'login' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Login</a>
+                    <a href="{% url 'signup' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+        {% block navbar_extra %}{% endblock %}
+    </header>
+    {% block pre_content %}{% endblock %}
+    <main class="max-w-6xl mx-auto px-4 py-7">
+        {% block content %}{% endblock %}
+    </main>
+   
+    <script>
+    const onIntersect = (entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); } });
+    };
+    const observer = new IntersectionObserver(onIntersect, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    });
+    </script>
+</body>
+</html>
+
+

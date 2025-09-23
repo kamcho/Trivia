@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen ">
+    <div class="w-full px-4 py-8">
+        <div class="w-full mx-auto">
+            <!-- Breadcrumb Navigation -->
+            <nav class="flex mb-6" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{% url 'home' %}" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
+                            <i class="fas fa-home mr-2"></i>
+                            Home
+                        </a>
+                    </li>
+                    {% block breadcrumb %}{% endblock %}
+                </ol>
+            </nav>
+            
+            <!-- Page Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-white mb-2">
+                        <i class="{% block header_icon %}fas fa-trophy{% endblock %} mr-2 text-indigo-400"></i>
+                        {% block header_title %}Competitions{% endblock %}
+                    </h1>
+                    <p class="text-gray-400">
+                        {% block header_subtitle %}Manage your competitions and activities{% endblock %}
+                    </p>
+                </div>
+                <div class="flex space-x-3">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Sidebar -->
+                {% if not hide_competition_menu %}
+                <div class="lg:col-span-1">
+                    <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                        <h3 class="text-lg font-semibold text-white mb-4">Competition Menu</h3>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="{% url 'competition_list' %}" 
+                                   class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'competition_list' %}bg-indigo-600/20 text-white border-l-4 border-indigo-500{% else %}text-gray-300 hover:bg-slate-700/50 hover:text-white{% endif %}">
+                                    <i class="fas fa-list mr-2 w-5 text-center"></i>
+                                    All Competitions
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'competition_create' %}" 
+                                   class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'competition_create' %}bg-indigo-600/20 text-white border-l-4 border-indigo-500{% else %}text-gray-300 hover:bg-slate-700/50 hover:text-white{% endif %}">
+                                    <i class="fas fa-plus-circle mr-2 w-5 text-center"></i>
+                                    New Competition
+                                </a>
+                            </li>
+                            <li class="border-t border-slate-700 my-2"></li>
+                            <li>
+                                <a href="{% url 'competitionactivity_list' %}" 
+                                   class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if 'activity' in request.resolver_match.url_name %}bg-indigo-600/20 text-white border-l-4 border-indigo-500{% else %}text-gray-300 hover:bg-slate-700/50 hover:text-white{% endif %}">
+                                    <i class="fas fa-tasks mr-2 w-5 text-center"></i>
+                                    Activities
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'activitycategory_list' %}" 
+                                   class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if 'activitycategory' in request.resolver_match.url_name %}bg-indigo-600/20 text-white border-l-4 border-indigo-500{% else %}text-gray-300 hover:bg-slate-700/50 hover:text-white{% endif %}">
+                                    <i class="fas fa-tags mr-2 w-5 text-center"></i>
+                                    Activity Categories
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Main Content Area -->
+                <div class="{% if hide_competition_menu %}lg:col-span-4{% else %}lg:col-span-3{% endif %}">
+                    {% block competition_content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

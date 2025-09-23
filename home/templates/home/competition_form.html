@@ -1,0 +1,277 @@
+{% extends 'home/competition/base.html' %}
+
+{% block breadcrumb %}
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <a href="{% url 'competition_list' %}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Competitions</a>
+</li>
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <span class="text-sm font-medium text-gray-400">
+        {% if form.instance.pk %}Edit{% else %}New{% endif %} Competition
+    </span>
+</li>
+{% endblock %}
+
+{% block header_title %}
+    {% if form.instance.pk %}Edit{% else %}Create New{% endif %} Competition
+{% endblock %}
+
+{% block header_subtitle %}
+    {% if form.instance.pk %}
+        Update the details of this competition
+    {% else %}
+        Create a new competition with activities and dates
+    {% endif %}
+{% endblock %}
+
+{% block header_actions %}
+<a href="{% if form.instance.pk %}{% url 'competition_detail' slug=form.instance.slug %}{% else %}{% url 'competition_list' %}{% endif %}" 
+   class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors">
+    <i class="fas fa-arrow-left mr-2"></i> Back
+</a>
+{% endblock %}
+
+{% block competition_content %}
+<div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="bg-red-900/30 border border-red-700/50 text-red-200 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <p class="font-medium">Please correct the errors below</p>
+            </div>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Basic Information Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-indigo-400 mr-2"></i>
+                        Basic Information
+                    </h3>
+                    
+                    <!-- Name Field -->
+                    <div class="mb-4">
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                            {{ form.name.label }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            {{ form.name }}
+                            {% if form.name.help_text %}
+                            <div class="mt-1 text-xs text-gray-400">{{ form.name.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                            {{ form.description.label }}
+                        </label>
+                        <div class="relative">
+                            {{ form.description }}
+                            {% if form.description.help_text %}
+                            <div class="mt-1 text-xs text-gray-400">{{ form.description.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% if form.description.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.description.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Activities Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-tasks text-indigo-400 mr-2"></i>
+                        Competition Activities
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Select Activities
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="space-y-2 max-h-60 overflow-y-auto p-3 bg-slate-800/20 rounded-lg border border-slate-700/50">
+                                {% for checkbox in form.activities %}
+                                <div class="flex items-start">
+                                    {{ checkbox.tag }}
+                                    <div class="ml-3">
+                                        <label for="{{ checkbox.id_for_label }}" class="text-sm text-gray-300 font-medium">
+                                            {{ checkbox.choice_label }}
+                                        </label>
+                                        {% if checkbox.choice_label.description %}
+                                        <p class="text-xs text-gray-400 mt-1">{{ checkbox.choice_label.description|truncatechars:100 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.activities.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.activities.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Schedule Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-calendar-alt text-indigo-400 mr-2"></i>
+                        Schedule
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Start Date -->
+                        <div>
+                            <label for="{{ form.start_date.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                                {{ form.start_date.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                </div>
+                                {{ form.start_date }}
+                            </div>
+                            {% if form.start_date.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.start_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- End Date -->
+                        <div>
+                            <label for="{{ form.end_date.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-1">
+                                {{ form.end_date.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                </div>
+                                {{ form.end_date }}
+                            </div>
+                            {% if form.end_date.errors %}
+                            <p class="mt-1 text-sm text-red-400">{{ form.end_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Date Validation Info -->
+                        <div class="bg-blue-900/20 border border-blue-700/50 text-blue-200 px-3 py-2 rounded-lg text-xs">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Competition will run from start date to end date (inclusive)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Card -->
+                <div class="bg-slate-800/30 rounded-xl p-6 border border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <i class="fas fa-toggle-on text-indigo-400 mr-2"></i>
+                        Status & Visibility
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Is Active Toggle -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label for="{{ form.is_active.id_for_label }}" class="block text-sm font-medium text-gray-300">
+                                    Active
+                                </label>
+                                <p class="text-xs text-gray-400">Make this competition available</p>
+                            </div>
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                {{ form.is_active }}
+                                <label for="{{ form.is_active.id_for_label }}" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        {% if form.is_active.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ form.is_active.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="flex justify-between items-center pt-6 border-t border-slate-700/50 mt-8">
+            <div>
+                {% if form.instance.pk %}
+                <p class="text-xs text-gray-400">
+                    Last updated {{ form.instance.updated_at|timesince }} ago
+                    {% if form.instance.created_by %}
+                    by {{ form.instance.created_by.get_full_name|default:form.instance.created_by.username }}
+                    {% endif %}
+                </p>
+                {% endif %}
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% if form.instance.pk %}{% url 'competition_detail' slug=form.instance.slug %}{% else %}{% url 'competition_list' %}{% endif %}" 
+                   class="px-4 py-2 border border-slate-600 text-sm font-medium rounded-lg text-gray-300 hover:bg-slate-700/50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    {% if form.instance.pk %}Update{% else %}Create{% endif %} Competition
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Toggle Switch Styling -->
+<style>
+.toggle-checkbox:checked {
+    right: 0;
+    border-color: #6366f1;
+    background-color: #6366f1;
+}
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #6366f1;
+}
+</style>
+
+<!-- JavaScript for date validation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateField = document.getElementById('{{ form.start_date.id_for_label }}');
+    const endDateField = document.getElementById('{{ form.end_date.id_for_label }}');
+    
+    if (startDateField && endDateField) {
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        startDateField.setAttribute('min', today);
+        endDateField.setAttribute('min', today);
+        
+        // Update end date minimum when start date changes
+        startDateField.addEventListener('change', function() {
+            if (this.value) {
+                endDateField.setAttribute('min', this.value);
+                if (endDateField.value && endDateField.value < this.value) {
+                    endDateField.value = this.value;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

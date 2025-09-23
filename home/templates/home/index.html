@@ -1,0 +1,621 @@
+{% extends "base.html" %}
+
+{% block title %}BibleTrivia · Home{% endblock %}
+
+{% block pre_content %}
+<section class="relative py-16">
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-indigo-600/20 blur-3xl"></div>
+        <div class="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl"></div>
+    </div>
+    <div class="relative max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+        <div class="reveal">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-2 text-xs font-bold text-emerald-900 bg-emerald-300/80 border border-emerald-400/50 rounded-full px-2.5 py-1">Daily Streak • Keep learning</span>
+                <span class="inline-flex items-center gap-2 text-xs font-bold text-indigo-100 bg-indigo-600/40 border border-indigo-400/40 rounded-full px-2.5 py-1">Cohort 2 Registration Open</span>
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight mt-3 bg-gradient-to-r from-indigo-300 via-emerald-300 to-cyan-200 bg-clip-text text-transparent">Challenge your Bible knowledge with engaging, fair, cohort-based trivia.</h1>
+            <p class="text-slate-300 mt-3">Register churches and groups, compete across Scripture categories, and grow Bible literacy with practice and cohorts.</p>
+            <div class="flex gap-3 mt-5 flex-wrap">
+                <a class="bg-emerald-500 hover:bg-emerald-400 text-emerald-900 font-semibold px-4 py-2 rounded-lg shadow-lg" href="#active-cohorts">Join a Cohort</a>
+                <a class="bg-slate-800/60 hover:bg-slate-800 text-slate-100 border border-slate-600/50 px-4 py-2 rounded-lg" href="{% url 'church-create' %}">Register Church</a>
+                <a class="text-slate-300 underline underline-offset-4 hover:text-slate-100" href="#practice">Try Practice</a>
+            </div>
+            <div class="mt-6 flex items-center gap-4 text-sm text-slate-400 flex-wrap">
+                <div class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/></svg> Fair play</div>
+                <div class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Scripture-focused</div>
+                <div class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg> Cohort-based</div>
+                <div class="inline-flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg> Trusted by 20+ churches</div>
+            </div>
+        </div>
+        <div class="relative reveal">
+            <div class="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-indigo-500/30 to-emerald-500/30 blur-xl"></div>
+            <div class="relative rounded-3xl overflow-hidden border border-slate-700/40 bg-white/5 shadow-2xl">
+                <img class="w-full h-64 object-cover" src="https://images.unsplash.com/photo-1485322551133-3a4c27a9d925?q=80&w=1200&auto=format&fit=crop" alt="Church trivia event" />
+                <div class="absolute top-3 left-3 flex gap-2">
+                    <span class="text-[11px] font-bold bg-indigo-600/90 text-white px-2 py-1 rounded">Live Now</span>
+                    <span class="text-[11px] font-bold bg-emerald-500/90 text-emerald-900 px-2 py-1 rounded">Fair Play</span>
+                </div>
+                <div class="p-4 grid grid-cols-3 gap-3 bg-slate-900/40 backdrop-blur">
+                    <div class="text-center rounded-xl border border-slate-700/40 bg-white/5 p-3">
+                        <div class="text-2xl font-extrabold">1,200+</div>
+                        <div class="text-xs text-slate-400">Questions</div>
+                    </div>
+                    <div class="text-center rounded-xl border border-slate-700/40 bg-white/5 p-3">
+                        <div class="text-2xl font-extrabold">7</div>
+                        <div class="text-xs text-slate-400">Categories</div>
+                    </div>
+                    <div class="text-center rounded-xl border border-slate-700/40 bg-white/5 p-3">
+                        <div class="text-2xl font-extrabold">90s</div>
+                        <div class="text-xs text-slate-400">Avg. Round</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section id="about" class="py-14 reveal">
+    <h2 class="text-3xl sm:text-4xl font-extrabold mb-3 bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">About Us</h2>
+    <p class="text-slate-300 max-w-3xl leading-relaxed">
+        We organize Bible trivia events to boost Bible literacy across churches. Through engaging cohorts,
+        fair competition, and practice tools, we help participants deepen their knowledge of Scripture while
+        building community and healthy rivalry among churches and groups.
+    </p>
+    <div class="grid md:grid-cols-3 gap-5 mt-6">
+        <article class="group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl">
+            <img class="h-44 w-full object-cover group-hover:scale-[1.03] transition" src="https://images.unsplash.com/photo-1504051771394-dd2e66b2e08f?q=80&w=1200&auto=format&fit=crop" alt="Church community" />
+            <div class="p-4">
+                <div class="flex items-center gap-2 font-semibold">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9-4 9 4-9 4-9-4z"/></svg>
+                    Church Engagement
+                </div>
+                <p class="text-sm text-slate-300 mt-1">Register churches and groups, build profiles, and foster fellowship through friendly competition.</p>
+            </div>
+        </article>
+        <article class="group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl">
+            <img class="h-44 w-full object-cover group-hover:scale-[1.03] transition" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" alt="Schedule planning" />
+            <div class="p-4">
+                <div class="flex items-center gap-2 font-semibold">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
+                    Cohort Format
+                </div>
+                <p class="text-sm text-slate-300 mt-1">Run seasonal cohorts with fixtures, venues, and clear timelines for every stage.</p>
+            </div>
+        </article>
+        <article class="group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl">
+            <img class="h-44 w-full object-cover group-hover:scale-[1.03] transition" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop" alt="Learning and study" />
+            <div class="p-4">
+                <div class="flex items-center gap-2 font-semibold">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21.5 12.083 12.083 0 015.84 10.578L12 14z"/></svg>
+                    Learning Focus
+                </div>
+                <p class="text-sm text-slate-300 mt-1">Practice modes, memory verses, and analytics that encourage growth and consistency.</p>
+            </div>
+        </article>
+    </div>
+</section>
+<section id="actions" class="py-10 reveal">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a href="{% url 'church-create' %}" class="rounded-xl border border-slate-700/40 bg-white/5 p-4 hover:bg-white/10 transition group">
+            <div class="text-lg font-semibold">Register a Church</div>
+            <p class="text-slate-300 text-sm">Create a profile for your church and categorize it (e.g., Pentecostal).</p>
+            <div class="mt-2 text-slate-400 text-xs inline-flex items-center gap-1 group-hover:text-slate-200">Get started
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+        <a href="{% url 'group-create' %}" class="rounded-xl border border-slate-700/40 bg-white/5 p-4 hover:bg-white/10 transition group">
+            <div class="text-lg font-semibold">Create a Trivia Group</div>
+            <p class="text-slate-300 text-sm">Set up groups that will compete on behalf of your church.</p>
+            <div class="mt-2 text-slate-400 text-xs inline-flex items-center gap-1 group-hover:text-slate-200">Create group
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg>
+            </div>
+        </a>
+        <a href="{% url 'question_create' %}" class="rounded-xl border border-slate-700/40 bg-white/5 p-4 hover:bg-white/10 transition group">
+            <div class="text-lg font-semibold">Add Question</div>
+            <p class="text-slate-300 text-sm">Contribute new trivia questions to the database.</p>
+            <div class="mt-2 text-slate-400 text-xs inline-flex items-center gap-1 group-hover:text-slate-200">Add question
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg>
+            </div>
+        </a>
+        <a href="{% url 'question_list' %}" class="rounded-xl border border-slate-700/40 bg-white/5 p-4 hover:bg-white/10 transition group">
+            <div class="text-lg font-semibold">Browse Questions</div>
+            <p class="text-slate-300 text-sm">View and search through all trivia questions.</p>
+            <div class="mt-2 text-slate-400 text-xs inline-flex items-center gap-1 group-hover:text-slate-200">Browse
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+        </a>
+    </div>
+</section>
+
+<section id="active-cohorts" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Active & Upcoming Cohorts</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">View all</a>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+        <article class="group relative rounded-2xl overflow-hidden border border-slate-700/40 bg-white/5 shadow-xl transform transition will-change-transform hover:-translate-y-1 hover:shadow-2xl">
+            <div class="absolute -inset-0.5 rounded-2xl bg-gradient-to-tr from-indigo-500/0 via-indigo-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 blur-lg transition"></div>
+            <div class="relative">
+                <img class="h-40 w-full object-cover group-hover:scale-105 transition" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" alt="Cohort 1 cover" />
+                <div class="absolute top-3 left-3 text-xs font-bold bg-indigo-600/90 text-white px-2 py-1 rounded">Live</div>
+            </div>
+            <div class="relative p-4">
+                <div class="text-slate-400 text-xs">Cohort</div>
+                <div class="font-bold">Cohort 1 · 2025</div>
+                <div class="text-slate-400 text-sm">Jan 15 — Mar 20</div>
+                <a class="inline-flex items-center gap-2 mt-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-2 rounded-lg transition transform hover:-translate-y-0.5 hover:scale-[1.02]" href="#">View</a>
+            </div>
+        </article>
+        <article class="group relative rounded-2xl overflow-hidden border border-slate-700/40 bg-white/5 shadow-xl transform transition will-change-transform hover:-translate-y-1 hover:shadow-2xl">
+            <div class="relative">
+                <img class="h-40 w-full object-cover group-hover:scale-105 transition" src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop" alt="Cohort 2 cover" />
+                <div class="absolute top-3 left-3 text-xs font-bold bg-emerald-500/90 text-emerald-900 px-2 py-1 rounded">Open</div>
+            </div>
+            <div class="p-4">
+                <div class="text-slate-400 text-xs">Cohort</div>
+                <div class="font-bold">Cohort 2 · 2025</div>
+                <div class="text-slate-400 text-sm">Apr 10 — Jun 15</div>
+                <a class="inline-flex items-center gap-2 mt-3 bg-emerald-500 hover:bg-emerald-400 text-emerald-900 font-semibold px-3 py-2 rounded-lg transition transform hover:-translate-y-0.5 hover:scale-[1.02]" href="#">Register</a>
+            </div>
+        </article>
+        <article class="group relative rounded-2xl overflow-hidden border border-slate-700/40 bg-white/5 shadow-xl transform transition will-change-transform hover:-translate-y-1 hover:shadow-2xl">
+            <div class="relative">
+                <img class="h-40 w-full object-cover group-hover:scale-105 transition" src="https://images.unsplash.com/photo-1477414348463-c0eb7f1359b6?q=80&w=1200&auto=format&fit=crop" alt="Cohort 3 cover" />
+                <div class="absolute top-3 left-3 text-xs font-bold bg-slate-800/90 text-slate-100 px-2 py-1 rounded">Soon</div>
+            </div>
+            <div class="p-4">
+                <div class="text-slate-400 text-xs">Cohort</div>
+                <div class="font-bold">Cohort 3 · 2025</div>
+                <div class="text-slate-400 text-sm">Jul 20 — Sep 25</div>
+                <a class="inline-flex items-center gap-2 mt-3 bg-slate-800/60 hover:bg-slate-800 text-slate-100 border border-slate-600/50 px-3 py-2 rounded-lg transition transform hover:-translate-y-0.5 hover:scale-[1.02]" href="#">Notify me</a>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section id="leaderboard" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Leaderboard Highlights</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">Full leaderboard</a>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+        <div class="rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold">Top Churches</div>
+                <div class="inline-flex items-center gap-1 text-amber-300 text-xs">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81H7.03a1 1 0 00.95-.69l1.07-3.292z"/></svg>
+                    Current Cohort
+                </div>
+            </div>
+            <ol class="space-y-2">
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-indigo-600 text-white grid place-items-center font-bold">1</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Grace Chapel</div>
+                        <div class="text-xs text-slate-400">412 pts</div>
+                    </div>
+                    <span class="text-amber-300">★</span>
+                </li>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center font-bold">2</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Faith Assembly</div>
+                        <div class="text-xs text-slate-400">395 pts</div>
+                    </div>
+                    <span class="text-slate-400">•</span>
+                </li>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center font-bold">3</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Kingdom Life</div>
+                        <div class="text-xs text-slate-400">380 pts</div>
+                    </div>
+                    <span class="text-slate-400">•</span>
+                </li>
+            </ol>
+        </div>
+        <div class="rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold">Top Groups</div>
+                <div class="inline-flex items-center gap-1 text-amber-300 text-xs">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81H7.03a1 1 0 00.95-.69l1.07-3.292z"/></svg>
+                    Current Cohort
+                </div>
+            </div>
+            <ol class="space-y-2">
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500 text-emerald-900 grid place-items-center font-bold">1</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Grace Warriors</div>
+                        <div class="text-xs text-slate-400">198 pts</div>
+                    </div>
+                    <span class="text-amber-300">★</span>
+                </li>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center font-bold">2</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Faith Flames</div>
+                        <div class="text-xs text-slate-400">187 pts</div>
+                    </div>
+                    <span class="text-slate-400">•</span>
+                </li>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center font-bold">3</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Kingdom Knights</div>
+                        <div class="text-xs text-slate-400">180 pts</div>
+                    </div>
+                    <span class="text-slate-400">•</span>
+                </li>
+            </ol>
+        </div>
+        <div class="rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="font-semibold">Top Participants</div>
+                <div class="inline-flex items-center gap-1 text-amber-300 text-xs">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81H7.03a1 1 0 00.95-.69l1.07-3.292z"/></svg>
+                    Current Cohort
+                </div>
+            </div>
+            <ol class="space-y-2">
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-cyan-500 text-cyan-900 grid place-items-center font-bold">1</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Mary J.</div>
+                        <div class="text-xs text-slate-400">102 pts</div>
+                    </div>
+                    <span class="text-amber-300">★</span>
+                </li>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center font-bold">2</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Daniel K.</div>
+                        <div class="text-xs text-slate-400">99 pts</div>
+                    </div>
+                    <span class="text-slate-400">•</span>
+                </li>
+                <li class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center font-bold">3</div>
+                    <div class="flex-1">
+                        <div class="font-medium">Samuel O.</div>
+                        <div class="text-xs text-slate-400">95 pts</div>
+                    </div>
+                    <span class="text-slate-400">•</span>
+                </li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<section id="categories" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Categories & Rounds</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">View details</a>
+    </div>
+    <div class="grid md:grid-cols-4 gap-6">
+        <div class="group relative rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9-4 9 4-9 4-9-4z"/></svg>
+            </div>
+            <div class="font-semibold">Old Testament</div>
+            <p class="text-sm text-slate-300">History, Law, Wisdom, Prophets</p>
+            <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-lg bg-slate-900/95 border border-slate-700/50 p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition">
+                <div class="text-xs text-slate-300">Covers Genesis–Malachi. Typical questions: people, places, dates, and key passages.</div>
+            </div>
+        </div>
+        <div class="group relative rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
+            </div>
+            <div class="font-semibold">New Testament</div>
+            <p class="text-sm text-slate-300">Gospels, Acts, Epistles, Revelation</p>
+            <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-lg bg-slate-900/95 border border-slate-700/50 p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition">
+                <div class="text-xs text-slate-300">Covers Matthew–Revelation. Emphasis on teachings of Jesus and early church.</div>
+            </div>
+        </div>
+        <div class="group relative rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21.5 12.083 12.083 0 015.84 10.578L12 14z"/></svg>
+            </div>
+            <div class="font-semibold">Memory Verses</div>
+            <p class="text-sm text-slate-300">Quote and reference challenges</p>
+            <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-lg bg-slate-900/95 border border-slate-700/50 p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition">
+                <div class="text-xs text-slate-300">Recite verses verbatim and provide accurate references under time pressure.</div>
+            </div>
+        </div>
+        <div class="group relative rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m2-4h.01M12 6a9 9 0 100 18 9 9 0 000-18z"/></svg>
+            </div>
+            <div class="font-semibold">Speed Round</div>
+            <p class="text-sm text-slate-300">Timed questions with bonus for quick accuracy</p>
+            <div class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 rounded-lg bg-slate-900/95 border border-slate-700/50 p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition">
+                <div class="text-xs text-slate-300">Rapid-fire across categories. Speed and accuracy both contribute to score.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="schedule" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Upcoming Schedule</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">Download calendar</a>
+    </div>
+    <ol class="relative border-l border-slate-700/40 ml-2 space-y-6">
+        <li class="ml-6 group">
+            <span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center">
+                <span class="h-3.5 w-3.5 rounded-full bg-indigo-500 ring-4 ring-indigo-500/20"></span>
+            </span>
+            <div class="rounded-xl border border-slate-700/40 bg-white/5 p-4 shadow-xl hover:-translate-y-0.5 transition">
+                <div class="flex items-center justify-between">
+                    <div class="font-semibold">Opening Round</div>
+                    <span class="text-xs text-slate-400">Virtual</span>
+                </div>
+                <div class="text-sm text-slate-300">Jan 15, 2025</div>
+            </div>
+        </li>
+        <li class="ml-6 group">
+            <span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center">
+                <span class="h-3.5 w-3.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></span>
+            </span>
+            <div class="rounded-xl border border-slate-700/40 bg-white/5 p-4 shadow-xl hover:-translate-y-0.5 transition">
+                <div class="flex items-center justify-between">
+                    <div class="font-semibold">Quarterfinals</div>
+                    <span class="text-xs text-slate-400">In-Person</span>
+                </div>
+                <div class="text-sm text-slate-300">Feb 05, 2025</div>
+            </div>
+        </li>
+        <li class="ml-6 group">
+            <span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center">
+                <span class="h-3.5 w-3.5 rounded-full bg-cyan-500 ring-4 ring-cyan-500/20"></span>
+            </span>
+            <div class="rounded-xl border border-slate-700/40 bg-white/5 p-4 shadow-xl hover:-translate-y-0.5 transition">
+                <div class="flex items-center justify-between">
+                    <div class="font-semibold">Semifinals</div>
+                    <span class="text-xs text-slate-400">In-Person</span>
+                </div>
+                <div class="text-sm text-slate-300">Mar 01, 2025</div>
+            </div>
+        </li>
+        <li class="ml-6 group">
+            <span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center">
+                <span class="h-3.5 w-3.5 rounded-full bg-slate-500 ring-4 ring-slate-500/20"></span>
+            </span>
+            <div class="rounded-xl border border-slate-700/40 bg-white/5 p-4 shadow-xl hover:-translate-y-0.5 transition">
+                <div class="flex items-center justify-between">
+                    <div class="font-semibold">Finals</div>
+                    <span class="text-xs text-slate-400">Hybrid</span>
+                </div>
+                <div class="text-sm text-slate-300">Mar 20, 2025</div>
+            </div>
+        </li>
+    </ol>
+</section>
+
+<section id="recent-results" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Recent Results</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">All results</a>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+        <article class="group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl p-4 hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="absolute -inset-0.5 rounded-2xl bg-gradient-to-tr from-indigo-500/0 via-indigo-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 blur-lg transition"></div>
+            <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 text-white grid place-items-center font-bold">GW</div>
+                    <div>
+                        <div class="font-semibold">Grace Warriors</div>
+                        <div class="text-xs text-slate-400">Grace Chapel</div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-slate-700/50 bg-slate-900/50 px-3 py-1 text-sm font-bold">
+                        <span>42</span>
+                        <span class="text-slate-400">VS</span>
+                        <span>38</span>
+                    </div>
+                    <div class="text-[11px] text-emerald-300 mt-1">Final</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <div class="font-semibold">Faith Flames</div>
+                        <div class="text-xs text-slate-400">Faith Assembly</div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-emerald-500 text-emerald-900 grid place-items-center font-bold">FF</div>
+                </div>
+            </div>
+            <div class="relative mt-3 flex items-center justify-between text-xs text-slate-400">
+                <div>Cohort 1 • Week 3</div>
+                <div>Feb 12, 2025</div>
+            </div>
+        </article>
+        <article class="group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-white/5 shadow-xl p-4 hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="absolute -inset-0.5 rounded-2xl bg-gradient-to-tr from-indigo-500/0 via-indigo-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 blur-lg transition"></div>
+            <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-cyan-500 text-cyan-900 grid place-items-center font-bold">KK</div>
+                    <div>
+                        <div class="font-semibold">Kingdom Knights</div>
+                        <div class="text-xs text-slate-400">Kingdom Life</div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-slate-700/50 bg-slate-900/50 px-3 py-1 text-sm font-bold">
+                        <span>50</span>
+                        <span class="text-slate-400">VS</span>
+                        <span>49</span>
+                    </div>
+                    <div class="text-[11px] text-emerald-300 mt-1">Final</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <div class="font-semibold">Hope Stars</div>
+                        <div class="text-xs text-slate-400">Hope Church</div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-700 text-white grid place-items-center font-bold">HS</div>
+                </div>
+            </div>
+            <div class="relative mt-3 flex items-center justify-between text-xs text-slate-400">
+                <div>Cohort 1 • Week 3</div>
+                <div>Feb 12, 2025</div>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section id="rules" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Rules & Fair Play</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">Read full rules</a>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+        <div class="rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-indigo-600/20 text-indigo-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8"/></svg>
+            </div>
+            <div class="font-semibold">Scoring & Time</div>
+            <ul class="mt-2 text-sm text-slate-300 list-disc pl-5 space-y-1">
+                <li>Correct answer +1, bonus for speed in Speed Round</li>
+                <li>Fixed time per question; no extensions</li>
+            </ul>
+        </div>
+        <div class="rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="font-semibold">Fair Play</div>
+            <ul class="mt-2 text-sm text-slate-300 list-disc pl-5 space-y-1">
+                <li>No external aids during rounds</li>
+                <li>Officials’ decisions are final</li>
+            </ul>
+        </div>
+        <div class="rounded-2xl border border-slate-700/40 bg-white/5 p-5 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/20 text-cyan-300 grid place-items-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01"/></svg>
+            </div>
+            <div class="font-semibold">Appeals & Ties</div>
+            <ul class="mt-2 text-sm text-slate-300 list-disc pl-5 space-y-1">
+                <li>Formal appeals accepted within 10 minutes post-match</li>
+                <li>Tiebreakers: sudden-death questions</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="verse" class="py-10">
+    <h2 class="text-xl font-bold mb-4">Scripture of the Day</h2>
+    <blockquote class="rounded-xl border border-slate-700/40 bg-white/5 p-4 italic">“Your word is a lamp to my feet and a light to my path.” — Psalm 119:105</blockquote>
+</section>
+
+<section id="practice" class="py-12 reveal">
+    <div class="flex items-end justify-between gap-4 mb-5">
+        <h2 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">Practice Mode</h2>
+        <a href="#" class="text-sm text-indigo-300 hover:text-indigo-200 underline">Learn more</a>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 items-center">
+        <div class="relative">
+            <div class="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-indigo-500/30 to-emerald-500/30 blur-xl"></div>
+            <div class="relative rounded-3xl overflow-hidden border border-slate-700/40 bg-white/5 shadow-2xl">
+                <img class="w-full h-56 object-cover" src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=1200&auto=format&fit=crop" alt="Practice study" />
+                <div class="p-4 grid grid-cols-3 gap-3 bg-slate-900/40 backdrop-blur">
+                    <div class="text-center rounded-xl border border-slate-700/40 bg-white/5 p-3">
+                        <div class="text-2xl font-extrabold">+120</div>
+                        <div class="text-xs text-slate-400">XP Earned</div>
+                    </div>
+                    <div class="text-center rounded-xl border border-slate-700/40 bg-white/5 p-3">
+                        <div class="text-2xl font-extrabold">5</div>
+                        <div class="text-xs text-slate-400">Day Streak</div>
+                    </div>
+                    <div class="text-center rounded-xl border border-slate-700/40 bg-white/5 p-3">
+                        <div class="text-2xl font-extrabold">78%</div>
+                        <div class="text-xs text-slate-400">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <p class="text-slate-300">Sharpen your skills with quick 10-question rounds. Track your streaks and XP, and get instant feedback with verse references.</p>
+            <div class="mt-5 flex gap-3">
+                <a class="bg-emerald-500 hover:bg-emerald-400 text-emerald-900 font-semibold px-4 py-2 rounded-lg shadow-lg" href="#">Start 10-question practice</a>
+                <a class="bg-slate-800/60 hover:bg-slate-800 text-slate-100 border border-slate-600/50 px-4 py-2 rounded-lg" href="#">Custom practice</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="faq" class="py-10">
+    <h2 class="text-xl font-bold mb-4">FAQ</h2>
+    <div class="space-y-3">
+        <details class="rounded-xl border border-slate-700/40 bg-white/5 p-4">
+            <summary class="font-semibold cursor-pointer">How do churches register?</summary>
+            <p class="text-sm text-slate-300 mt-2">A coordinator creates a church profile, selects category, and invites groups.</p>
+        </details>
+        <details class="rounded-xl border border-slate-700/40 bg-white/5 p-4">
+            <summary class="font-semibold cursor-pointer">How is scoring calculated?</summary>
+            <p class="text-sm text-slate-300 mt-2">Correct answers, speed bonuses, and round multipliers contribute to total.</p>
+        </details>
+    </div>
+</section>
+
+<footer class="border-t border-slate-700/30 text-slate-300">
+    <div class="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-4 gap-8">
+        <div>
+            <div class="flex items-center gap-2 font-semibold">
+                <span class="brand-badge bg-indigo-600 text-white">BT</span>
+                <span>BibleTrivia</span>
+            </div>
+            <p class="mt-3 text-sm text-slate-400">Managing Scripture-centered trivia competitions across churches to boost Bible literacy through fair, engaging cohorts.</p>
+            <div class="mt-4 flex items-center gap-3 text-slate-400">
+                <a href="#" class="hover:text-slate-200" aria-label="Twitter">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.633 7.997c.013.18.013.36.013.54 0 5.5-4.187 11.84-11.84 11.84-2.353 0-4.54-.69-6.38-1.87.327.038.64.051.98.051a8.37 8.37 0 0 0 5.19-1.79 4.19 4.19 0 0 1-3.91-2.9c.255.038.51.064.778.064.374 0 .748-.051 1.096-.14a4.183 4.183 0 0 1-3.357-4.106v-.051c.56.31 1.2.5 1.884.526a4.177 4.177 0 0 1-1.866-3.476c0-.775.206-1.49.56-2.113a11.87 11.87 0 0 0 8.61 4.37 4.72 4.72 0 0 1-.103-.959 4.184 4.184 0 0 1 7.24-2.862 8.26 8.26 0 0 0 2.656-1.01 4.2 4.2 0 0 1-1.84 2.31 8.37 8.37 0 0 0 2.41-.65 9.01 9.01 0 0 1-2.096 2.173z"/></svg>
+                </a>
+                <a href="#" class="hover:text-slate-200" aria-label="Facebook">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12.07C22 6.49 17.52 2 11.93 2S2 6.49 2 12.07c0 4.98 3.66 9.11 8.44 9.95v-7.04H7.9v-2.9h2.54V9.41c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.62.77-1.62 1.56v1.87h2.77l-.44 2.9h-2.33V22c4.78-.84 8.44-4.97 8.44-9.93z"/></svg>
+                </a>
+                <a href="#" class="hover:text-slate-200" aria-label="YouTube">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3.1 3.1 0 0 0-2.2-2.2C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.3.5A3.1 3.1 0 0 0 .5 6.2 32.6 32.6 0 0 0 0 12a32.6 32.6 0 0 0 .5 5.8 3.1 3.1 0 0 0 2.2 2.2c2 .5 9.3.5 9.3.5s7.3 0 9.3-.5a3.1 3.1 0 0 0 2.2-2.2c.4-1.9.5-3.8.5-5.8s0-3.9-.5-5.8zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg>
+                </a>
+            </div>
+        </div>
+        <div>
+            <div class="font-semibold text-slate-200">Quick Links</div>
+            <ul class="mt-3 space-y-2 text-sm">
+                <li><a class="hover:text-slate-100" href="#about">About</a></li>
+                <li><a class="hover:text-slate-100" href="#active-cohorts">Cohorts</a></li>
+                <li><a class="hover:text-slate-100" href="#leaderboard">Leaderboard</a></li>
+                <li><a class="hover:text-slate-100" href="#categories">Categories</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="font-semibold text-slate-200">Resources</div>
+            <ul class="mt-3 space-y-2 text-sm">
+                <li><a class="hover:text-slate-100" href="#rules">Rules & Fair Play</a></li>
+                <li><a class="hover:text-slate-100" href="#practice">Practice Mode</a></li>
+                <li><a class="hover:text-slate-100" href="#faq">FAQ</a></li>
+                <li><a class="hover:text-slate-100" href="#recent-results">Recent Results</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="font-semibold text-slate-200">Stay Updated</div>
+            <p class="mt-3 text-sm text-slate-400">Get cohort announcements and new question sets.</p>
+            <form class="mt-3 flex items-center gap-2" onsubmit="return false;">
+                <input class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40" placeholder="Email address" />
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-3 py-2 rounded-lg">Subscribe</button>
+            </form>
+        </div>
+    </div>
+    <div class="border-t border-slate-700/30">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4 flex-wrap text-slate-400 text-sm">
+            <div>© {% now "Y" %} BibleTrivia. All rights reserved.</div>
+            <div class="flex items-center gap-3">
+                <a href="#" class="hover:text-slate-200">Privacy</a>
+                <a href="#" class="hover:text-slate-200">Terms</a>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}

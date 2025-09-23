@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - {{ group.church.name }} · BibleTrivia{% endblock %}
+
+{% block content %}
+<section class="py-10">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex items-start justify-between mb-8">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <h1 class="text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-emerald-300 to-cyan-300 bg-clip-text text-transparent">
+                        {{ group.name }}
+                    </h1>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-900/30 text-indigo-300 border border-indigo-700/50">
+                        {{ group.category }}
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-2">
+                    <a href="{% url 'church-detail' group.church.slug %}" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                        {{ group.church.name }}
+                    </a>
+                </p>
+                {% if group.description %}
+                    <p class="text-slate-300 max-w-2xl">{{ group.description }}</p>
+                {% endif %}
+            </div>
+            
+            {% if can_manage %}
+                <div class="flex gap-2">
+                    <a href="{% url 'group_update' group.pk %}" 
+                       class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Edit Group
+                    </a>
+                    <a href="{% url 'group_member_manage' group.pk %}" 
+                       class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Manage Members
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Total Members</p>
+                        <p class="text-2xl font-bold text-slate-100">{{ total_members }}/{{ group.max_members }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-600/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Competitions</p>
+                        <p class="text-2xl font-bold text-slate-100">{{ group.total_competitions }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-600/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Wins</p>
+                        <p class="text-2xl font-bold text-slate-100">{{ group.total_wins }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Points</p>
+                        <p class="text-2xl font-bold text-slate-100">{{ group.total_points }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-cyan-600/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leadership & Members Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Leadership -->
+            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+                <h3 class="text-xl font-bold text-slate-100 mb-4">Leadership</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold text-sm">
+                                    {{ group.patron.first_name.0|default:group.patron.email.0 }}{{ group.patron.last_name.0|default:"" }}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-slate-200 font-medium">{{ group.patron.get_full_name|default:group.patron.email }}</p>
+                                <p class="text-slate-400 text-sm">Patron</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded bg-indigo-900/30 text-indigo-300 border border-indigo-700/50">
+                            Leader
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold text-sm">
+                                    {{ group.captain.first_name.0|default:group.captain.email.0 }}{{ group.captain.last_name.0|default:"" }}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-slate-200 font-medium">{{ group.captain.get_full_name|default:group.captain.email }}</p>
+                                <p class="text-slate-400 text-sm">Captain</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded bg-emerald-900/30 text-emerald-300 border border-emerald-700/50">
+                            Captain
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members -->
+            <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-slate-100">Members</h3>
+                    <span class="text-sm text-slate-400">{{ total_members }}/{{ group.max_members }}</span>
+                </div>
+                
+                {% if members %}
+                    <div class="space-y-3">
+                        {% for member in members %}
+                            <div class="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                                <div class="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold text-xs">
+                                        {{ member.first_name.0|default:member.email.0 }}{{ member.last_name.0|default:"" }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-slate-200 text-sm font-medium">{{ member.get_full_name|default:member.email }}</p>
+                                    <p class="text-slate-400 text-xs">Member</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                            </svg>
+                        </div>
+                        <p class="text-slate-400 text-sm">No members yet</p>
+                        {% if can_manage %}
+                            <a href="{% url 'group_member_manage' group.pk %}" 
+                               class="inline-block mt-2 text-indigo-400 hover:text-indigo-300 text-sm font-medium">
+                                Add members →
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Leaderboard / Attempts -->
+<section class="pb-10 -mt-4">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Attempts -->
+        <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-slate-100">Recent Attempts</h3>
+                <div class="text-sm text-slate-400">Total: {{ attempt_count }}</div>
+            </div>
+            {% if recent_attempts %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="text-slate-300 border-b border-slate-700/50">
+                        <tr>
+                            <th class="py-2 pr-4">Quiz</th>
+                            <th class="py-2 px-4">Score</th>
+                            <th class="py-2 px-4">Completed</th>
+                            <th class="py-2 px-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-200 divide-y divide-slate-700/40">
+                        {% for a in recent_attempts %}
+                        <tr>
+                            <td class="py-2 pr-4">
+                                <a href="{% url 'quiz_detail' slug=a.quiz.slug %}" class="text-indigo-400 hover:text-indigo-300">{{ a.quiz.name }}</a>
+                            </td>
+                            <td class="py-2 px-4">{{ a.score|default:0 }}</td>
+                            <td class="py-2 px-4">{{ a.completed_at|date:'Y-m-d H:i'|default:'—' }}</td>
+                            <td class="py-2 px-4 capitalize">{{ a.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-sm">No attempts yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Best Attempts -->
+        <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-slate-100">Best Attempts</h3>
+                <div class="text-sm text-slate-400">Avg score: {{ avg_attempt_score|default:"—"|floatformat:1 }}</div>
+            </div>
+            {% if best_attempts %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="text-slate-300 border-b border-slate-700/50">
+                        <tr>
+                            <th class="py-2 pr-4">Quiz</th>
+                            <th class="py-2 px-4">Score</th>
+                            <th class="py-2 px-4">Completed</th>
+                            <th class="py-2 px-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-200 divide-y divide-slate-700/40">
+                        {% for a in best_attempts %}
+                        <tr>
+                            <td class="py-2 pr-4">
+                                <a href="{% url 'quiz_detail' slug=a.quiz.slug %}" class="text-indigo-400 hover:text-indigo-300">{{ a.quiz.name }}</a>
+                            </td>
+                            <td class="py-2 px-4">{{ a.score|default:0 }}</td>
+                            <td class="py-2 px-4">{{ a.completed_at|date:'Y-m-d H:i'|default:'—' }}</td>
+                            <td class="py-2 px-4 capitalize">{{ a.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-sm">No attempts to rank yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<!-- Member Leaderboard -->
+<section class="pb-10 -mt-6">
+    <div class="max-w-6xl mx-auto bg-slate-800/50 backdrop-blur rounded-xl p-6 border border-slate-700/50">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-slate-100">Member Leaderboard</h3>
+            <div class="text-sm text-slate-400">Total members: {{ total_members }}</div>
+        </div>
+        {% if members_with_stats %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left">
+                <thead class="text-slate-300 border-b border-slate-700/50">
+                    <tr>
+                        <th class="py-2 pr-4">Member</th>
+                        <th class="py-2 px-4">Answers</th>
+                        <th class="py-2 px-4">Points</th>
+                    </tr>
+                </thead>
+                <tbody class="text-slate-200 divide-y divide-slate-700/40">
+                    {% for m in members_with_stats %}
+                    <tr>
+                        <td class="py-2 pr-4">{{ m.get_full_name|default:m.email }}</td>
+                        <td class="py-2 px-4">{{ m.answers_count|default:0 }}</td>
+                        <td class="py-2 px-4">{{ m.group_points|default:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-slate-400 text-sm">No member activity yet.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+

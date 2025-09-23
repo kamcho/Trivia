@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+
+{% block title %}Taking: {{ quiz.name }} - BibleTrivia{% endblock %}
+
+{% block extra_head %}
+<style>
+    .question-card {
+        display: none;
+    }
+    .question-card.active {
+        display: block;
+    }
+    .choice-option {
+        transition: all 0.2s ease;
+    }
+    .choice-option:hover {
+        background-color: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.5);
+    }
+    .choice-option.selected {
+        background-color: rgba(99, 102, 241, 0.2);
+        border-color: #6366f1;
+    }
+    .progress-bar {
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Quiz Header -->
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">{{ quiz.name }}</h1>
+                    <p class="text-gray-400">{{ question_count }} questions • {{ estimated_duration }} minutes</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-400">Time Remaining</div>
+                    <div id="timer" class="text-xl font-bold text-white">
+                        {% if time_limit %}{{ time_limit }}:00{% else %}∞{% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-700 rounded-full h-2">
+                <div id="progress-bar" class="bg-indigo-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-sm text-gray-400 mt-2">
+                <span>Question <span id="current-question">1</span> of {{ question_count }}</span>
+                <span id="progress-percentage">0%</span>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        {% if instructions %}
+        <div class="bg-blue-900/20 border border-blue-700/50 text-blue-200 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle mr-3 mt-0.5"></i>
+                <div>
+                    <h3 class="font-medium mb-1">Instructions</h3>
+                    <p class="text-sm whitespace-pre-line">{{ instructions }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quiz Form -->
+        <form id="quiz-form" method="post" class="space-y-6" data-can-select-group="{{ can_select_group|yesno:'1,0' }}" data-requires-group="{{ requires_group|yesno:'1,0' }}">
+            {% csrf_token %}
+            {% if can_select_group %}
+            <!-- Group Selection -->
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
+                <label for="group_id" class="block text-sm font-medium text-slate-300 mb-2">Group Participation{% if requires_group %} (Required){% endif %}</label>
+                <select id="group_id" name="group_id" class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200">
+                    {% if not requires_group %}
+                    <option value="">Take as Individual</option>
+                    {% else %}
+                    <option value="">-- Select your group --</option>
+                    {% endif %}
+                    {% for g in user_groups %}
+                    <option value="{{ g.id }}">{{ g.name }} ({{ g.church.name }})</option>
+                    {% endfor %}
+                </select>
+                <p id="group_error" class="hidden mt-2 text-sm text-red-400">Please select a group to continue.</p>
+            </div>
+            {% endif %}
+            
+            {% for question in questions %}
+            <div class="question-card {% if forloop.first %}active{% endif %}" data-question="{{ forloop.counter }}" data-qtype="{{ question.question_type }}" data-qid="{{ question.id }}">
+                <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold text-white mb-2">
+                            Question {{ forloop.counter }}
+                        </h2>
+                        <p class="text-gray-300 text-lg leading-relaxed">{{ question.question_text }}</p>
+                        {% if question.bible_reference %}
+                        <p class="text-sm text-indigo-400 mt-2">
+                            <i class="fas fa-bible mr-1"></i>
+                            {{ question.bible_reference }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if question.question_type == 'open' %}
+                        <div>
+                            <label for="q_{{ question.id }}_text" class="block text-sm font-medium text-slate-300 mb-2">Your Answer</label>
+                            <textarea id="q_{{ question.id }}_text" name="question_{{ question.id }}_text" rows="4" class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200" placeholder="Type your answer here..."></textarea>
+                        </div>
+                    {% else %}
+                        <div class="space-y-3">
+                            {% for choice in question.choices.all %}
+                            <label class="choice-option block p-4 border border-slate-600 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                                {% if question.question_type == 'multiple' %}
+                                <input type="checkbox"
+                                       name="question_{{ question.id }}"
+                                       value="{{ choice.id }}"
+                                       class="sr-only"
+                                       data-question="{{ forloop.parentloop.counter }}">
+                                {% else %}
+                                <input type="radio"
+                                       name="question_{{ question.id }}"
+                                       value="{{ choice.id }}"
+                                       class="sr-only"
+                                       data-question="{{ forloop.parentloop.counter }}">
+                                {% endif %}
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 rounded-full border-2 border-slate-400 mr-4 flex-shrink-0 choice-indicator">
+                                        <div class="w-full h-full rounded-full bg-indigo-600 opacity-0 transition-opacity"></div>
+                                    </div>
+                                    <span class="text-gray-300">{{ choice.choice_text }}</span>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between items-center bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
+                <button type="button" id="prev-btn" class="px-6 py-2 border border-slate-600 text-slate-300 font-medium rounded-lg hover:bg-slate-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Previous
+                </button>
+                
+                <div class="flex space-x-2">
+                    <button type="button" id="next-btn" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors">
+                        Next
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                    <button type="submit" id="submit-btn" class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg transition-colors hidden">
+                        <i class="fas fa-check mr-2"></i>
+                        Submit Quiz
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if show_signup_modal %}
+<!-- Signup Suggestion Modal -->
+<div id="signup-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative mx-auto mt-24 max-w-md rounded-xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden">
+        <div class="p-5 border-b border-slate-700 flex items-start justify-between">
+            <div>
+                <h3 class="text-white text-lg font-semibold">Create an account to save your progress</h3>
+                <p class="text-slate-300 text-sm mt-1">Signing up lets you save attempts, track scores, and participate in group challenges.</p>
+            </div>
+            <button id="signup-modal-close" class="text-slate-400 hover:text-slate-200 p-1">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-5 space-y-3">
+            <ul class="text-slate-300 text-sm space-y-2">
+                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-0.5"></i> Save quiz attempts and resume later</li>
+                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-0.5"></i> Track your performance over time</li>
+                <li class="flex items-start"><i class="fas fa-check text-green-400 mr-2 mt-0.5"></i> Join groups and compete on leaderboards</li>
+            </ul>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a href="/accounts/login/" class="px-4 py-2 rounded-lg border border-slate-600 text-slate-200 hover:bg-slate-700/50">Log in</a>
+                <a href="/accounts/signup/" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white">Sign up</a>
+                <button id="signup-modal-continue" class="px-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500 text-white">Continue without account</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('signup-modal');
+        const closeBtn = document.getElementById('signup-modal-close');
+        const continueBtn = document.getElementById('signup-modal-continue');
+        function openModal(){ modal.classList.remove('hidden'); }
+        function closeModal(){ modal.classList.add('hidden'); }
+        // Open once on load
+        openModal();
+        closeBtn.addEventListener('click', closeModal);
+        continueBtn.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
+        // Close when clicking backdrop
+        modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+    });
+    </script>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questions = document.querySelectorAll('.question-card');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const currentQuestionSpan = document.getElementById('current-question');
+    const progressPercentageSpan = document.getElementById('progress-percentage');
+    const timer = document.getElementById('timer');
+    
+    let currentQuestionIndex = 0;
+    let timeRemaining = {{ time_limit|default:0 }} * 60; // Convert to seconds
+    let timerInterval;
+    
+    // Timer functionality
+    {% if time_limit %}
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-form').submit();
+            return;
+        }
+        
+        timeRemaining--;
+    }
+    
+    timerInterval = setInterval(updateTimer, 1000);
+    {% endif %}
+    
+    // Update progress
+    function updateProgress() {
+        const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+        progressBar.style.width = progress + '%';
+        progressPercentageSpan.textContent = Math.round(progress) + '%';
+        currentQuestionSpan.textContent = currentQuestionIndex + 1;
+    }
+    
+    // Show question
+    function showQuestion(index) {
+        questions.forEach((q, i) => {
+            q.classList.toggle('active', i === index);
+        });
+        
+        prevBtn.disabled = index === 0;
+        
+        if (index === questions.length - 1) {
+            nextBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+        } else {
+            nextBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+        
+        updateProgress();
+    }
+    
+    // Choice selection
+    document.querySelectorAll('.choice-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const input = this.querySelector('input');
+            const qIndex = parseInt(input.dataset.question) - 1;
+            const card = questions[qIndex];
+            const qtype = card.getAttribute('data-qtype');
+
+            if (qtype === 'multiple') {
+                // Toggle checkbox selection visuals
+                input.checked = !input.checked;
+                this.classList.toggle('selected', input.checked);
+                this.querySelector('.choice-indicator > div').style.opacity = input.checked ? '1' : '0';
+            } else {
+                // Radio: clear others then select this
+                card.querySelectorAll('.choice-option').forEach(opt => {
+                    const optInput = opt.querySelector('input');
+                    optInput.checked = false;
+                    opt.classList.remove('selected');
+                    opt.querySelector('.choice-indicator > div').style.opacity = '0';
+                });
+                input.checked = true;
+                this.classList.add('selected');
+                this.querySelector('.choice-indicator > div').style.opacity = '1';
+            }
+
+            // Enable next if has answer
+            if (hasAnswer(card)) {
+                nextBtn.disabled = false;
+            }
+        });
+    });
+    
+    // Navigation
+    nextBtn.addEventListener('click', function() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        }
+    });
+    
+    prevBtn.addEventListener('click', function() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion(currentQuestionIndex);
+        }
+    });
+    
+    // Form submission
+    function hasAnswer(card) {
+        const qtype = card.getAttribute('data-qtype');
+        if (qtype === 'open') {
+            const textarea = card.querySelector('textarea');
+            return textarea && textarea.value.trim().length > 0;
+        }
+        if (qtype === 'multiple') {
+            return card.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+        }
+        return !!card.querySelector('input[type="radio"]:checked');
+    }
+
+    document.getElementById('quiz-form').addEventListener('submit', function(e) {
+        const formEl = this;
+        const requiresGroup = formEl.getAttribute('data-requires-group') === '1';
+        const canSelectGroup = formEl.getAttribute('data-can-select-group') === '1';
+        if (canSelectGroup && requiresGroup) {
+            const groupSelect = document.getElementById('group_id');
+            const groupError = document.getElementById('group_error');
+            if (groupSelect && !groupSelect.value) {
+                e.preventDefault();
+                if (groupError) {
+                    groupError.classList.remove('hidden');
+                }
+                groupSelect.focus();
+                return;
+            }
+        }
+        const unansweredQuestions = [];
+        questions.forEach((q, i) => {
+            if (!hasAnswer(q)) {
+                unansweredQuestions.push(i + 1);
+            }
+        });
+        
+        if (unansweredQuestions.length > 0) {
+            e.preventDefault();
+            alert(`Please answer all questions. Unanswered: ${unansweredQuestions.join(', ')}`);
+            return;
+        }
+        
+        if (confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
+            clearInterval(timerInterval);
+        } else {
+            e.preventDefault();
+        }
+    });
+    
+    // Initialize
+    showQuestion(0);
+});
+</script>
+{% endblock %}
+
