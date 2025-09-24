@@ -44,14 +44,12 @@
           <div class="text-sm text-slate-300"><span class="text-slate-400">Group answer:</span> {{ item.text_answer|default:"—" }}</div>
         {% else %}
           {% for ch in item.question.choices.all %}
-            {% with is_selected=ch.id in item.selected_ids is_correct=ch.id in item.correct_ids %}
-            <div class="flex items-center gap-3 p-2 rounded-lg border {{ is_correct|yesno:'border-emerald-600/40,border-slate-700/40' }} {{ is_selected|yesno:'bg-slate-700/40,' }}">
-              <div class="w-5 h-5 rounded border {{ is_selected|yesno:'border-indigo-400 bg-indigo-500/30,border-slate-500' }}"></div>
-              <div class="flex-1 text-sm {{ is_correct|yesno:'text-emerald-300,text-slate-200' }}">{{ ch.choice_text }}</div>
-              {% if is_correct %}<span class="text-emerald-300 text-xs">correct</span>{% endif %}
-              {% if is_selected and not is_correct %}<span class="text-rose-300 text-xs">selected</span>{% endif %}
+            <div class="flex items-center gap-3 p-2 rounded-lg border {% if ch.id in item.correct_ids %}border-emerald-600/40{% else %}border-slate-700/40{% endif %} {% if ch.id in item.selected_ids %}bg-slate-700/40{% endif %}">
+              <div class="w-5 h-5 rounded border {% if ch.id in item.selected_ids %}border-indigo-400 bg-indigo-500/30{% else %}border-slate-500{% endif %}"></div>
+              <div class="flex-1 text-sm {% if ch.id in item.correct_ids %}text-emerald-300{% else %}text-slate-200{% endif %}">{{ ch.choice_text }}</div>
+              {% if ch.id in item.correct_ids %}<span class="text-emerald-300 text-xs">correct</span>{% endif %}
+              {% if ch.id in item.selected_ids and not ch.id in item.correct_ids %}<span class="text-rose-300 text-xs">selected</span>{% endif %}
             </div>
-            {% endwith %}
           {% endfor %}
         {% endif %}
       </div>

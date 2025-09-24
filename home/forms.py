@@ -110,14 +110,27 @@ class QuestionCategoryForm(forms.ModelForm):
 
 
 class QuestionForm(forms.ModelForm):
+    allowed_levels = forms.MultipleChoiceField(
+        required=False,
+        choices=Question.level_category,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'space-y-1'
+        }),
+        label='Applicable Levels'
+    )
+
     class Meta:
         model = Question
         fields = [
-            'categories', 'level', 'question_text', 'difficulty', 'question_type',
+            'categories', 'activities', 'level', 'allowed_levels', 'question_text', 'difficulty', 'question_type',
             'explanation', 'bible_reference', 'points', 'penalty', 'is_active'
         ]
         widgets = {
             'categories': forms.SelectMultiple(attrs={
+                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
+                'size': 6
+            }),
+            'activities': forms.SelectMultiple(attrs={
                 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
                 'size': 6
             }),
@@ -128,9 +141,6 @@ class QuestionForm(forms.ModelForm):
                 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
                 'placeholder': 'Enter your trivia question...',
                 'rows': 4
-            }),
-            'level': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
             }),
             'difficulty': forms.Select(attrs={
                 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
@@ -161,6 +171,19 @@ class QuestionForm(forms.ModelForm):
                 'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Initialize allowed_levels from instance if present
+        if self.instance and getattr(self.instance, 'allowed_levels', None):
+            self.fields['allowed_levels'].initial = self.instance.allowed_levels
+
+    def clean_allowed_levels(self):
+        data = self.cleaned_data.get('allowed_levels') or []
+        # Ensure 'All' is not combined with others
+        if 'All' in data and len(data) > 1:
+            data = ['All']
+        return data
 
 
 class ActivityCategoryForm(forms.ModelForm):
@@ -283,7 +306,7 @@ class TestQuizForm(forms.ModelForm):
     class Meta:
         model = TestQuiz
         fields = [
-            'name', 'description', 'level', 'participation', 'difficulty', 'quiz_type', 'questions',
+            'name', 'description', 'level', 'participation', 'difficulty', 'quiz_type', 'activities', 'questions',
             'time_limit', 'max_attempts', 'passing_score', 'is_active',
             'is_public', 'requires_authentication', 'instructions'
         ]
@@ -305,6 +328,10 @@ class TestQuizForm(forms.ModelForm):
             }),
             'quiz_type': forms.Select(attrs={
                 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
+            }),
+            'activities': forms.SelectMultiple(attrs={
+                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
+                'size': 6
             }),
             'questions': forms.SelectMultiple(attrs={
                 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',

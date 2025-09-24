@@ -40,6 +40,22 @@
                             {% endif %}
                         </div>
 
+                        <!-- Activities Field -->
+                        <div>
+                            <label for="{{ form.activities.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
+                                Activities (link to one or more)
+                            </label>
+                            {{ form.activities }}
+                            {% if form.activities.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.activities.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-slate-400">Associate this question with relevant activities (e.g., Memory Verses, Speed Round).</p>
+                        </div>
+
                         <!-- Level Field -->
                         <div>
                             <label for="{{ form.level.id_for_label }}" class="block text-sm font-medium text-slate-200 mb-2">
@@ -53,6 +69,24 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                        </div>
+
+                        <!-- Allowed Levels Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-200 mb-2">
+                                Applicable Levels (one or more)
+                            </label>
+                            <div class="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                                {{ form.allowed_levels }}
+                            </div>
+                            {% if form.allowed_levels.errors %}
+                                <div class="mt-1 text-red-400 text-sm">
+                                    {% for error in form.allowed_levels.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-slate-400">Example: Youth + Teens + Adults (exclude Children).</p>
                         </div>
                     </div>
 

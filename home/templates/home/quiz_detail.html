@@ -48,13 +48,26 @@
             <div class="mt-6 md:mt-0 md:ml-6">
                 {% if user.is_authenticated %}
                     {% if can_take_quiz %}
-                    <a href="{% url 'quiz_take' slug=quiz.slug %}" 
-                       class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors mb-3">
-                        <i class="fas fa-play mr-2"></i>
-                        Take Quiz
-                    </a>
+                    <div class="space-y-2">
+                        <a href="{% url 'quiz_take' slug=quiz.slug %}?individual=1" 
+                           class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors">
+                            <i class="fas fa-user mr-2"></i>
+                            Take as Individual
+                        </a>
+                        {% if user_groups %}
+                        <div class="text-xs text-slate-400">Or take as group:</div>
+                        <div class="grid grid-cols-1 gap-2">
+                            {% for g in user_groups %}
+                            <a href="{% url 'quiz_take' slug=quiz.slug %}?group_id={{ g.id }}" class="inline-flex items-center justify-between px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-md text-sm transition-colors">
+                                <span class="truncate"><i class="fas fa-users mr-2"></i>{{ g.name }} ({{ g.church.name }})</span>
+                                <i class="fas fa-arrow-right text-xs opacity-70"></i>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
                     {% else %}
-                    <div class="inline-flex items-center px-6 py-3 bg-slate-600 text-slate-300 font-semibold rounded-lg mb-3">
+                    <div class="inline-flex items-center px-6 py-3 bg_slate-600 text_slate-300 font-semibold rounded-lg mb-3">
                         <i class="fas fa-lock mr-2"></i>
                         Not available
                     </div>

@@ -71,26 +71,10 @@
         <!-- Quiz Form -->
         <form id="quiz-form" method="post" class="space-y-6" data-can-select-group="{{ can_select_group|yesno:'1,0' }}" data-requires-group="{{ requires_group|yesno:'1,0' }}">
             {% csrf_token %}
-            {% if can_select_group %}
-            <!-- Group Selection -->
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
-                <label for="group_id" class="block text-sm font-medium text-slate-300 mb-2">Group Participation{% if requires_group %} (Required){% endif %}</label>
-                <select id="group_id" name="group_id" class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200">
-                    {% if not requires_group %}
-                    <option value="">Take as Individual</option>
-                    {% else %}
-                    <option value="">-- Select your group --</option>
-                    {% endif %}
-                    {% for g in user_groups %}
-                    <option value="{{ g.id }}">{{ g.name }} ({{ g.church.name }})</option>
-                    {% endfor %}
-                </select>
-                <p id="group_error" class="hidden mt-2 text-sm text-red-400">Please select a group to continue.</p>
-            </div>
-            {% endif %}
+            {# Group selection moved to detail page; URL carries ?group_id=... or ?individual=1 #}
             
             {% for question in questions %}
-            <div class="question-card {% if forloop.first %}active{% endif %}" data-question="{{ forloop.counter }}" data-qtype="{{ question.question_type }}" data-qid="{{ question.id }}">
+            <div class="question-card {% if forloop.first %}active{% endif %}" data-question="{{ forloop.counter }}" data-qtype="{{ question.question_type }}" data-qid="{{ question.id }}" data-allow-multiple="{% if question.id in allow_multiple_ids %}1{% else %}0{% endif %}">
                 <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
                     <div class="mb-6">
                         <h2 class="text-xl font-semibold text-white mb-2">
@@ -112,22 +96,14 @@
                         </div>
                     {% else %}
                         <div class="space-y-3">
-                            {% for choice in question.choices.all %}
+                            {% for choice in question.shuffled_choices %}
                             <label class="choice-option block p-4 border border-slate-600 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
-                                {% if question.question_type == 'multiple' %}
-                                <input type="checkbox"
-                                       name="question_{{ question.id }}"
-                                       value="{{ choice.id }}"
-                                       class="sr-only"
-                                       data-question="{{ forloop.parentloop.counter }}">
+                                {% if question.id in allow_multiple_ids %}
+                                <input type="checkbox" name="question_{{ question.id }}" value="{{ choice.id }}" class="sr-only" data-question="{{ forloop.parentloop.counter }}">
                                 {% else %}
-                                <input type="radio"
-                                       name="question_{{ question.id }}"
-                                       value="{{ choice.id }}"
-                                       class="sr-only"
-                                       data-question="{{ forloop.parentloop.counter }}">
+                                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" class="sr-only" data-question="{{ forloop.parentloop.counter }}">
                                 {% endif %}
-                                <div class="flex items-center">
+                                <div class="flex items_center">
                                     <div class="w-6 h-6 rounded-full border-2 border-slate-400 mr-4 flex-shrink-0 choice-indicator">
                                         <div class="w-full h-full rounded-full bg-indigo-600 opacity-0 transition-opacity"></div>
                                     </div>
@@ -220,25 +196,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const timer = document.getElementById('timer');
     
     let currentQuestionIndex = 0;
-    let timeRemaining = {{ time_limit|default:0 }} * 60; // Convert to seconds
+    let timeRemaining = {{ time_limit|default:0 }} * 60; // seconds
     let timerInterval;
     
     // Timer functionality
     {% if time_limit %}
+    const QUIZ_TIMER_KEY = `bt_quiz_timer_{{ quiz.slug }}`;
+    // Initialize start time if not present
+    try {
+        const nowMs = Date.now();
+        const stored = localStorage.getItem(QUIZ_TIMER_KEY);
+        if (!stored) {
+            localStorage.setItem(QUIZ_TIMER_KEY, JSON.stringify({ startedAt: nowMs }));
+        } else {
+            const parsed = JSON.parse(stored);
+            if (!parsed || !parsed.startedAt) {
+                localStorage.setItem(QUIZ_TIMER_KEY, JSON.stringify({ startedAt: nowMs }));
+            }
+        }
+        // Recalculate remaining from stored start time
+        const { startedAt } = JSON.parse(localStorage.getItem(QUIZ_TIMER_KEY)) || { startedAt: nowMs };
+        const elapsedSec = Math.floor((nowMs - startedAt) / 1000);
+        const limitSec = {{ time_limit|default:0 }} * 60;
+        timeRemaining = Math.max(0, limitSec - elapsedSec);
+    } catch (e) {
+        // Fallback: no storage
+    }
+
     function updateTimer() {
         const minutes = Math.floor(timeRemaining / 60);
         const seconds = timeRemaining % 60;
         timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
         if (timeRemaining <= 0) {
+            try { localStorage.removeItem(QUIZ_TIMER_KEY); } catch (e) {}
             clearInterval(timerInterval);
             document.getElementById('quiz-form').submit();
             return;
         }
-        
         timeRemaining--;
     }
-    
+    // Render immediately, then start ticking
+    updateTimer();
     timerInterval = setInterval(updateTimer, 1000);
     {% endif %}
     
@@ -276,9 +275,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const input = this.querySelector('input');
             const qIndex = parseInt(input.dataset.question) - 1;
             const card = questions[qIndex];
-            const qtype = card.getAttribute('data-qtype');
+            const allowMultiple = card.getAttribute('data-allow-multiple') === '1';
 
-            if (qtype === 'multiple') {
+            if (allowMultiple) {
                 // Toggle checkbox selection visuals
                 input.checked = !input.checked;
                 this.classList.toggle('selected', input.checked);
@@ -321,11 +320,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission
     function hasAnswer(card) {
         const qtype = card.getAttribute('data-qtype');
+        const allowMultiple = card.getAttribute('data-allow-multiple') === '1';
         if (qtype === 'open') {
             const textarea = card.querySelector('textarea');
             return textarea && textarea.value.trim().length > 0;
         }
-        if (qtype === 'multiple') {
+        if (allowMultiple) {
             return card.querySelectorAll('input[type="checkbox"]:checked').length > 0;
         }
         return !!card.querySelector('input[type="radio"]:checked');
@@ -362,6 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
             clearInterval(timerInterval);
+            try { localStorage.removeItem(QUIZ_TIMER_KEY); } catch (err) {}
         } else {
             e.preventDefault();
         }

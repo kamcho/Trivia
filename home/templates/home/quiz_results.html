@@ -163,6 +163,41 @@
             </a>
         </div>
 
+        {% if not request.user.is_authenticated and anon_review_items %}
+        <!-- Anonymous Attempt Review -->
+        <div class="mt-8 bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                <i class="fas fa-eye text-amber-400 mr-3"></i>
+                Your Answers (Guest)
+            </h2>
+            <ol class="space-y-4">
+                {% for item in anon_review_items %}
+                <li class="rounded-lg border border-slate-700/50 bg-slate-900/40 p-4">
+                    <div class="text-slate-200 font-medium mb-2">Q{{ forloop.counter }}. {{ item.question.question_text }}</div>
+                    {% if item.question.question_type == 'open' %}
+                        <div class="text-sm text-slate-300"><span class="text-slate-400">Your answer:</span> {{ item.text_answer|default:'—' }}</div>
+                    {% else %}
+                        <div class="space-y-1 text-sm">
+                            {% for choice in item.question.choices.all %}
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full {% if choice.id in item.selected_ids %}bg-indigo-400{% else %}bg-slate-600{% endif %}"></span>
+                                <span class="{% if choice.id in item.correct_ids %}text-green-300{% else %}text-slate-300{% endif %}">
+                                    {{ choice.choice_text }}
+                                    {% if choice.id in item.correct_ids %}<i class="fas fa-check text-green-400 ml-1"></i>{% endif %}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-2 text-xs {% if item.is_correct %}text-green-300{% else %}text-slate-400{% endif %}">
+                            {% if item.is_correct %}Correct{% else %}Not fully correct{% endif %}
+                        </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+        {% endif %}
+
         <!-- Motivational Message -->
         <div class="mt-8 text-center">
             {% if results.passed %}

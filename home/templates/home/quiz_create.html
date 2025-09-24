@@ -113,6 +113,22 @@
                     {% endif %}
                 </div>
 
+                <!-- Activities Selection -->
+                <div>
+                    <label for="{{ form.activities.id_for_label }}" class="block text-sm font-medium text-slate-300 mb-2">
+                        Link Activities
+                    </label>
+                    <div class="bg-slate-700 rounded-lg p-4">
+                        {{ form.activities }}
+                        <p class="mt-2 text-sm text-slate-400">Select one or more activities this quiz belongs to.</p>
+                    </div>
+                    {% if form.activities.errors %}
+                        <div class="mt-1 text-sm text-red-400">
+                            {% for error in form.activities.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
                 <!-- Questions Selection -->
                 <div>
                     <label for="{{ form.questions.id_for_label }}" class="block text-sm font-medium text-slate-300 mb-2">

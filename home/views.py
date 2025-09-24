@@ -19,6 +19,7 @@ from .forms import (
     ActivityCategoryForm, CompetitionActivityForm, CompetitionForm, TestQuizForm,
     ActivityInstructionForm, ActivityRuleForm
 )
+from .competition_forms import CompetitionBookingForm
 from django.forms import inlineformset_factory
 from users.forms import QuickUserCreationForm
 from users.models import MyUser
@@ -700,6 +701,16 @@ class CompetitionActivityDetailView(DetailView):
             context['activity_rules'] = activity.rules.all().order_by('order', 'id')
         except Exception:
             context['activity_rules'] = []
+        # Related questions (at most 3)
+        try:
+            context['related_questions'] = list(activity.questions.all()[:3])
+        except Exception:
+            context['related_questions'] = []
+        # Related quizzes (at most 3)
+        try:
+            context['related_quizzes'] = list(activity.quizzes.filter(is_active=True).order_by('-created_at')[:3])
+        except Exception:
+            context['related_quizzes'] = []
         return context
 
 
@@ -1002,6 +1013,69 @@ class CompetitionPublicDetailView(DetailView):
         
         return context
 
+
+class CompetitionBookingView(LoginRequiredMixin, DetailView):
+    model = Competition
+    template_name = 'home/competition_booking.html'
+    context_object_name = 'competition'
+    slug_field = 'slug'
+    slug_url_kwarg = 'slug'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['hide_competition_menu'] = True
+        context['form'] = CompetitionBookingForm(user=self.request.user)
+        try:
+            comp = self.get_object()
+            window = comp.registration_windows.filter(is_active=True).order_by('opens_at').first()
+            context['fee_amount'] = getattr(window, 'fee_amount', None)
+            context['fee_currency'] = getattr(window, 'fee_currency', 'KES')
+        except Exception:
+            context['fee_amount'] = None
+            context['fee_currency'] = 'KES'
+        return context
+
+    def post(self, request, *args, **kwargs):
+        competition = self.get_object()
+        form = CompetitionBookingForm(request.POST, user=request.user)
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please log in to book this competition.')
+            return redirect('login')
+        if form.is_valid():
+            from .models import CompetitionBooking
+            group = form.cleaned_data.get('group')
+            num_slots = form.cleaned_data.get('num_slots') or 1
+            phone = (form.cleaned_data.get('phone_number') or '').strip()
+            payment_method = form.cleaned_data.get('payment_method')
+            # Compute fee from the first active registration window
+            window = competition.registration_windows.filter(is_active=True).order_by('opens_at').first()
+            amount = window.fee_amount if window and window.fee_amount else None
+            currency = window.fee_currency if window else 'KES'
+            try:
+                booking = CompetitionBooking.objects.create(
+                    competition=competition,
+                    user=None if group else request.user,
+                    group=group,
+                    num_slots=num_slots,
+                    status='pending',
+                    amount=amount,
+                    currency=currency,
+                    payment_method=payment_method,
+                    payment_status='pending',
+                    metadata={'phone_number': phone} if phone else None,
+                )
+                messages.success(request, 'Booking submitted! We will confirm shortly.')
+                return redirect('competition_public_detail', slug=competition.slug)
+            except Exception as e:
+                messages.error(request, f'Could not create booking: {e}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+        return self.render_to_response({
+            'competition': competition,
+            'form': form,
+            'hide_competition_menu': True,
+        })
+
 # Additional Views
 class TriviaGroupListView(ListView):
     model = TriviaGroup
@@ -1144,6 +1218,15 @@ class QuizDetailView(DetailView):
         # Get questions for preview
         context['questions'] = quiz.questions.all()[:5]  # Show first 5 questions
         
+        # Provide user groups for quick launch as group
+        user = self.request.user
+        context['user_groups'] = []
+        if user.is_authenticated and quiz.participation in ['Group', 'All']:
+            groups = TriviaGroup.objects.filter(
+                models.Q(members=user) | models.Q(captain=user) | models.Q(patron=user)
+            ).distinct().order_by('church__name', 'name')
+            context['user_groups'] = groups
+        
         return context
 
 
@@ -1171,6 +1254,33 @@ class QuizTakeView(DetailView):
             messages.error(request, 'This quiz has no questions.')
             return redirect('quiz_detail', slug=self.quiz.slug)
 
+        # Determine participation mode from query params
+        self.selected_group = None
+        group_id = request.GET.get('group_id')
+        taking_as_individual = request.GET.get('individual') in ['1', 'true', 'True', 'yes', 'on', '']
+
+        # Validate group selection if provided
+        if group_id and self.quiz.participation in ['Group', 'All'] and request.user.is_authenticated:
+            try:
+                group = TriviaGroup.objects.get(id=group_id)
+                # Membership/captain/patron check
+                if (group.members.filter(id=request.user.id).exists()) or group.captain_id == request.user.id or group.patron_id == request.user.id:
+                    self.selected_group = group
+                else:
+                    messages.error(request, 'You cannot take this quiz on behalf of the selected group.')
+                    return redirect('quiz_detail', slug=self.quiz.slug)
+            except TriviaGroup.DoesNotExist:
+                messages.error(request, 'Selected group not found.')
+                return redirect('quiz_detail', slug=self.quiz.slug)
+
+        # Enforce participation rules
+        if self.quiz.participation == 'Group' and not self.selected_group:
+            messages.error(request, 'Select a group to take this quiz.')
+            return redirect('quiz_detail', slug=self.quiz.slug)
+        # For Individual-only, ignore group param
+        if self.quiz.participation == 'Individual':
+            self.selected_group = None
+
         return super().dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
@@ -1178,27 +1288,37 @@ class QuizTakeView(DetailView):
         quiz = self.get_object()
         
         # Get all questions for the quiz
-        questions = quiz.questions.all()
+        questions = quiz.questions.all().prefetch_related('choices')
+        # Mark questions that should allow multiple selection and collect their ids
+        allow_multiple_ids = []
+        for q in questions:
+            try:
+                correct_count = q.choices.filter(is_correct=True).count()
+            except Exception:
+                correct_count = 0
+            q.allow_multiple = (getattr(q, 'question_type', 'single') == 'multiple') or (correct_count > 1)
+            # Debug print for server logs
+            try:
+                print(f"[QUIZ_TAKE] quiz={quiz.slug} qid={q.id} correct_count={correct_count} qtype={getattr(q, 'question_type', None)} allow_multiple={q.allow_multiple}")
+            except Exception:
+                pass
+            if q.allow_multiple:
+                allow_multiple_ids.append(q.id)
+            # Randomize choices for display
+            try:
+                q.shuffled_choices = list(q.choices.all().order_by('?'))
+            except Exception:
+                q.shuffled_choices = list(q.choices.all())
         context['questions'] = questions
+        context['allow_multiple_ids'] = allow_multiple_ids
         context['question_count'] = questions.count()
         context['time_limit'] = quiz.time_limit
         context['instructions'] = quiz.instructions
-        # Group participation support
+        # Participation selection is done on detail page; hide in-page selection
         user = self.request.user
-        # Modal for unauthenticated users
         context['show_signup_modal'] = not user.is_authenticated
         context['can_select_group'] = False
         context['requires_group'] = False
-        context['user_groups'] = []
-        if user.is_authenticated and quiz.participation in ['Group', 'All']:
-            # Groups where user is a member, captain, or patron
-            groups = TriviaGroup.objects.filter(
-                models.Q(members=user) | models.Q(captain=user) | models.Q(patron=user)
-            ).distinct()
-            if groups.exists():
-                context['user_groups'] = groups
-                context['can_select_group'] = True
-                context['requires_group'] = (quiz.participation == 'Group')
         
         return context
     
@@ -1219,8 +1339,11 @@ class QuizTakeView(DetailView):
             if question.question_type == 'open':
                 ta = request.POST.get(f'question_{question.id}_text', '').strip()
                 return 0, [], ta
-            if question.question_type == 'single':
-                cid = request.POST.get(f'question_{question.id}')
+            name = f'question_{question.id}'
+            ids = request.POST.getlist(name)
+            # If user selected only one or the form used radios, fallback to single value
+            if not ids:
+                cid = request.POST.get(name)
                 if not cid:
                     return 0, [], ''
                 try:
@@ -1229,46 +1352,41 @@ class QuizTakeView(DetailView):
                     return 0, [], ''
                 pts = question.points if c.is_correct else 0
                 return pts, [c.id], ''
-            # multiple
-            ids = request.POST.getlist(f'question_{question.id}')
-            if not ids:
-                return 0, [], ''
-            # Validate all belong to question
+            # Multiple selection path
             choices = list(Choice.objects.filter(id__in=ids, question=question))
-            if not choices or len(choices) != len(set(ids)):
+            if not choices:
                 return 0, [], ''
             selected_set = {c.id for c in choices}
             correct_set = set(question.choices.filter(is_correct=True).values_list('id', flat=True))
+            denom = len(correct_set)
+            if denom == 0:
+                return 0, list(selected_set), ''
             if question.penalty == 0:
-                # Positive proportional credit based on fraction of correct choices selected; no penalty for incorrect selections
-                denom = len(correct_set)
-                if denom == 0:
-                    pts = 0
-                else:
-                    correct_selected = len(selected_set & correct_set)
-                    pts = int(round(question.points * (correct_selected / denom))) if correct_selected > 0 else 0
+                correct_selected = len(selected_set & correct_set)
+                pts = int(round(question.points * (correct_selected / denom))) if correct_selected > 0 else 0
             else:
-                # Proportional credit minus penalty per wrong selection; floor at 0
-                denom = len(correct_set)
-                if denom == 0:
+                correct_selected = len(selected_set & correct_set)
+                wrong_selected = len(selected_set - correct_set)
+                base = question.points * (correct_selected / denom)
+                pts = int(round(base - (question.penalty * wrong_selected)))
+                if pts < 0:
                     pts = 0
-                else:
-                    correct_selected = len(selected_set & correct_set)
-                    wrong_selected = len(selected_set - correct_set)
-                    base = question.points * (correct_selected / denom)
-                    pts = int(round(base - (question.penalty * wrong_selected)))
-                    if pts < 0:
-                        pts = 0
             return pts, list(selected_set), ''
 
-        # Anonymous users: session-only practice flow
+        # Anonymous users: session-only practice flow (store selections for review)
         if not request.user.is_authenticated:
+            selections = []
             for question in questions:
                 total_points += question.points
-                pts, _, _ = score_question(question)
+                pts, selected_ids, text_answer = score_question(question)
                 score += pts
                 if pts > 0:
                     correct_answers += 1
+                selections.append({
+                    'question_id': question.id,
+                    'selected_ids': selected_ids,
+                    'text_answer': text_answer,
+                })
 
             percentage = (score / total_points * 100) if total_points > 0 else 0
             passed = percentage >= quiz.passing_score
@@ -1281,13 +1399,14 @@ class QuizTakeView(DetailView):
                 'correct_answers': correct_answers,
                 'total_questions': questions.count(),
                 'passed': passed,
-                'timestamp': timezone.now().isoformat()
+                'timestamp': timezone.now().isoformat(),
+                'selections': selections,
             }
             return redirect('quiz_results', slug=quiz.slug)
 
         # Authenticated users: persist attempts and responses
         user = request.user
-        group_id = request.POST.get('group_id')
+        group_id = request.POST.get('group_id') or request.GET.get('group_id')
         use_group = False
         group = None
         if group_id and quiz.participation in ['Group', 'All']:
@@ -1376,6 +1495,8 @@ class QuizTakeView(DetailView):
             attempt.score = score
             attempt.completed_at = timezone.now()
             attempt.save(update_fields=['score', 'completed_at'])
+            attempt_id_for_results = attempt.id
+            attempt_type_for_results = 'individual'
 
         # Store summary for results page
         percentage = (score / total_points * 100) if total_points > 0 else 0
@@ -1413,6 +1534,26 @@ class QuizResultsView(DetailView):
             return redirect('quiz_detail', slug=self.get_object().slug)
         
         context['results'] = results
+        # For anonymous users, build a lightweight review dataset
+        if not self.request.user.is_authenticated:
+            selections = results.get('selections') or []
+            q_by_id = {q.id: q for q in self.get_object().questions.all().prefetch_related('choices')}
+            review_items = []
+            for s in selections:
+                q = q_by_id.get(s.get('question_id'))
+                if not q:
+                    continue
+                correct_ids = set(q.choices.filter(is_correct=True).values_list('id', flat=True))
+                selected_ids = set(s.get('selected_ids') or [])
+                review_items.append({
+                    'question': q,
+                    'selected_ids': selected_ids,
+                    'correct_ids': correct_ids,
+                    'is_correct': (selected_ids == correct_ids) if q.question_type != 'open' else None,
+                    'text_answer': s.get('text_answer') or '',
+                    'points': q.points,
+                })
+            context['anon_review_items'] = review_items
         return context
 
 

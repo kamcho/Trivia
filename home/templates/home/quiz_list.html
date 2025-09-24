@@ -158,13 +158,6 @@
                                 View Details
                                 <i class="fas fa-arrow-right ml-1"></i>
                             </a>
-                            {% if quiz.is_available %}
-                            <a href="{% url 'quiz_take' slug=quiz.slug %}" 
-                               class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
-                                <i class="fas fa-play mr-1"></i>
-                                Take Quiz
-                            </a>
-                            {% endif %}
                         </div>
                         
                         <!-- Admin Actions -->

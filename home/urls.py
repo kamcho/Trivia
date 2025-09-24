@@ -7,7 +7,7 @@ from .views import (
     ChoiceCreateView, ActivityCategoryListView, ActivityCategoryCreateView, ActivityCategoryUpdateView, 
     ActivityCategoryDetailView, CompetitionActivityListView, CompetitionActivityCreateView, 
     CompetitionActivityUpdateView, CompetitionActivityDetailView, CompetitionActivityInstructionsUpdateView, CompetitionActivityRulesUpdateView, CompetitionListView, 
-    CompetitionCreateView, CompetitionUpdateView, CompetitionDetailView, CompetitionPublicDetailView, LeaderboardView, AboutView,
+    CompetitionCreateView, CompetitionUpdateView, CompetitionDetailView, CompetitionPublicDetailView, CompetitionBookingView, LeaderboardView, AboutView,
     QuizListView, QuizDetailView, QuizTakeView, QuizResultsView, QuizCreateView, QuizUpdateView, QuizDeleteView, QuizManageQuestionsView,
     AttemptHistoryView, AttemptReviewView, GroupAttemptHistoryView, GroupAttemptReviewView
 )
@@ -55,6 +55,7 @@ urlpatterns = [
     path('competitions/new/', CompetitionCreateView.as_view(), name='competition_create'),
     path('competitions/<slug:slug>/', CompetitionDetailView.as_view(), name='competition_detail'),
     path('competitions/<slug:slug>/public/', CompetitionPublicDetailView.as_view(), name='competition_public_detail'),
+    path('competitions/<slug:slug>/book/', CompetitionBookingView.as_view(), name='competition_booking'),
     path('competitions/<slug:slug>/edit/', CompetitionUpdateView.as_view(), name='competition_update'),
     
     # Additional useful URLs

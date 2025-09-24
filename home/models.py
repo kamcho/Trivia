@@ -223,11 +223,23 @@ class Question(TimeStampedModel):
         ('All', 'All'),
     ]
     level = models.CharField(max_length=100, choices=level_category, default='All')
+    # New: allow selecting multiple applicable levels
+    allowed_levels = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Select one or more levels this question applies to"
+    )
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     categories = models.ManyToManyField(
         QuestionCategory,
         related_name='questions',
         blank=True,
+    )
+    activities = models.ManyToManyField(
+        'CompetitionActivity',
+        related_name='questions',
+        blank=True,
+        help_text='Activities this question is associated with'
     )
     question_text = models.TextField()
     
@@ -611,8 +623,24 @@ class CompetitionBooking(TimeStampedModel):
     group = models.ForeignKey('TriviaGroup', on_delete=models.CASCADE, null=True, blank=True, related_name='competition_bookings')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     booked_at = models.DateTimeField(auto_now_add=True)
+    # Payment fields
     paid = models.BooleanField(default=False)
+    payment_method = models.CharField(max_length=20, blank=True, choices=[
+        ('mpesa', 'M-Pesa'),
+        ('paypal_card', 'PayPal/Card'),
+        ('none', 'None'),
+    ], default='none')
+    payment_status = models.CharField(max_length=20, blank=True, choices=[
+        ('pending', 'Pending'),
+        ('authorized', 'Authorized'),
+        ('captured', 'Captured'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ], default='pending')
     payment_ref = models.CharField(max_length=100, blank=True)
+    payment_receipt = models.CharField(max_length=100, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    currency = models.CharField(max_length=10, default='KES')
     num_slots = models.PositiveIntegerField(default=1)
     metadata = models.JSONField(blank=True, null=True)
 
@@ -857,6 +885,12 @@ class TestQuiz(TimeStampedModel):
         related_name='test_quizzes',
         blank=True,
         help_text="Questions included in this quiz"
+    )
+    activities = models.ManyToManyField(
+        CompetitionActivity,
+        related_name='quizzes',
+        blank=True,
+        help_text="Activities this quiz is associated with"
     )
    
     

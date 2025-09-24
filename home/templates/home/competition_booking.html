@@ -1,0 +1,111 @@
+{% extends 'home/competition/base.html' %}
+
+{% block breadcrumb %}
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <a href="{% url 'competition_list' %}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Competitions</a>
+</li>
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <a href="{% url 'competition_public_detail' slug=competition.slug %}" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">{{ competition.name|truncatechars:40 }}</a>
+</li>
+<li class="flex items-center">
+    <i class="fas fa-angle-right text-gray-500 mx-2"></i>
+    <span class="text-sm font-medium text-gray-400">Book</span>
+</li>
+{% endblock %}
+
+{% block header_title %}Book: {{ competition.name }}{% endblock %}
+{% block header_subtitle %}Reserve a slot for this competition{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'competition_public_detail' slug=competition.slug %}"
+   class="inline-flex items-center px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-semibold transition-colors">
+    <i class="fas fa-arrow-left mr-2"></i> Back to Competition
+</a>
+{% endblock %}
+
+{% block competition_content %}
+<div class="max-w-xl">
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">Number of slots</label>
+            {{ form.num_slots }}
+            {% if form.num_slots.errors %}
+            <p class="text-xs text-rose-400 mt-1">{{ form.num_slots.errors.0 }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-300 mb-2">Payment method</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700/50 bg-slate-900/40 cursor-pointer">
+                    <input type="radio" name="payment_method" value="mpesa" {% if form.payment_method.value == 'mpesa' or not form.payment_method.value %}checked{% endif %}>
+                    <div>
+                        <div class="text-white text-sm font-medium">M-Pesa</div>
+                        <div class="text-xs text-slate-400">Pay via mobile (STK Push)</div>
+                    </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700/50 bg-slate-900/40 cursor-pointer">
+                    <input type="radio" name="payment_method" value="paypal_card" {% if form.payment_method.value == 'paypal_card' %}checked{% endif %}>
+                    <div>
+                        <div class="text-white text-sm font-medium">PayPal/Card</div>
+                        <div class="text-xs text-slate-400">Visa/Mastercard/PayPal</div>
+                    </div>
+                </label>
+            </div>
+            {% if fee_amount %}
+            <p class="text-xs text-slate-400 mt-2">Fee: {{ fee_currency }} {{ fee_amount }}</p>
+            {% else %}
+            <p class="text-xs text-slate-400 mt-2">No fee configured for this competition.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">Book as group (optional)</label>
+            {{ form.group }}
+            <p class="text-xs text-slate-400 mt-1">If left blank, the booking is for your user.</p>
+            {% if form.group.errors %}
+            <p class="text-xs text-rose-400 mt-1">{{ form.group.errors.0 }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">Phone number {% if form.payment_method.value == 'mpesa' or not form.payment_method.value %}(required for M-Pesa){% else %}(optional){% endif %}</label>
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}
+            <p class="text-xs text-rose-400 mt-1">{{ form.phone_number.errors.0 }}</p>
+            {% endif %}
+        </div>
+        <div class="pt-2">
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                <i class="fas fa-ticket-alt mr-2"></i>
+                Submit Booking
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-6 text-sm text-slate-400">
+        <p><i class="far fa-calendar-alt mr-1"></i>{{ competition.start_date|date:"M d, Y" }} — {{ competition.end_date|date:"M d, Y" }}</p>
+        {% if competition.eligibility %}
+        <p class="mt-1"><i class="fas fa-user-check mr-1"></i>Eligibility: {{ competition.eligibility.get_allowed_levels_display }} ({{ competition.eligibility.allowed_participation }})</p>
+        {% endif %}
+        <div class="mt-4">
+            <h4 class="text-slate-300 font-semibold mb-2">Payment steps</h4>
+            <div class="space-y-1">
+                <div id="steps-mpesa" class="text-xs">
+                    <p>1. Ensure your phone number is correct and on.</p>
+                    <p>2. Tap Submit Booking to receive an M-Pesa prompt.</p>
+                    <p>3. Enter your M-Pesa PIN on the prompt sent to your phone.</p>
+                    <p>4. Wait for confirmation. Do not close this page.</p>
+                </div>
+                <div id="steps-card" class="text-xs hidden">
+                    <p>1. Tap Submit Booking to proceed to PayPal/Card checkout.</p>
+                    <p>2. Complete payment using your card or PayPal account.</p>
+                    <p>3. You will be redirected back after payment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
