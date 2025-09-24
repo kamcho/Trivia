@@ -101,23 +101,18 @@ class QuickUserCreationForm(forms.ModelForm):
             'placeholder': 'Enter email address'
         })
     )
-    role = forms.ChoiceField(
-        choices=MyUser.ROLE_CHOICES,
-        required=False,
-        widget=forms.Select(attrs={
-            'class': 'w-full bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
-        })
-    )
     
     class Meta:
         model = MyUser
-        fields = ['first_name', 'last_name', 'email', 'role']
+        fields = ['first_name', 'last_name', 'email']
     
     def save(self, commit=True):
         user = super().save(commit=False)
         # Set a temporary password - user will need to reset it
         user.set_password('TempPass123!')
         user.username = user.email  # Use email as username
+        # Always set role to 'Member' for quick-create
+        user.role = 'Member'
         if commit:
             user.save()
         return user

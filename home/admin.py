@@ -4,7 +4,7 @@ from .models import (
     Question, Choice, ActivityCategory, ActivityInstruction, ActivityRule, CompetitionMedia,
     CompetitionEligibility, CompetitionRegistrationWindow, CompetitionBooking, CompetitionContact,
     CompetitionVenue, CompetitionScheduleItem, CompetitionSponsor, CompetitionPolicy,
-    CompetitionFAQ, CompetitionResource, CompetitionSocialLink
+    CompetitionFAQ, CompetitionResource, CompetitionSocialLink, UserRanking
 )
 from .forms import CompetitionRegistrationWindowForm, CompetitionScheduleItemForm
 admin.site.register(Question)
@@ -14,6 +14,7 @@ admin.site.register(ActivityInstruction)
 admin.site.register(ActivityRule)
 admin.site.register(Competition)
 admin.site.register(CompetitionActivity)
+admin.site.register(UserRanking)
 @admin.register(CompetitionMedia)
 class CompetitionMediaAdmin(admin.ModelAdmin):
     list_display = ('competition', 'title', 'media_type', 'intro_media', 'order', 'is_active', 'created_at')

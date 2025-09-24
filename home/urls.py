@@ -9,7 +9,7 @@ from .views import (
     CompetitionActivityUpdateView, CompetitionActivityDetailView, CompetitionActivityInstructionsUpdateView, CompetitionActivityRulesUpdateView, CompetitionListView, 
     CompetitionCreateView, CompetitionUpdateView, CompetitionDetailView, CompetitionPublicDetailView, CompetitionBookingView, LeaderboardView, AboutView,
     QuizListView, QuizDetailView, QuizTakeView, QuizResultsView, QuizCreateView, QuizUpdateView, QuizDeleteView, QuizManageQuestionsView,
-    AttemptHistoryView, AttemptReviewView, GroupAttemptHistoryView, GroupAttemptReviewView
+    AttemptHistoryView, AttemptReviewView, GroupAttemptHistoryView, GroupAttemptReviewView, UserPerformanceView
 )
 
 
@@ -62,6 +62,8 @@ urlpatterns = [
     path('groups/', TriviaGroupListView.as_view(), name='group_list'),
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
     path('about/', AboutView.as_view(), name='about'),
+    # User performance analytics
+    path('users/<int:pk>/performance/', UserPerformanceView.as_view(), name='user_performance'),
     
     # Quiz URLs
     path('quizzes/', QuizListView.as_view(), name='quiz_list'),

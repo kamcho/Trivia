@@ -8,6 +8,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.db.models import Count, Q, Sum, Avg
 from django.db import models
+import json
 from .models import (
     Church, TriviaGroup, QuestionCategory, Question, Choice,
     ActivityCategory, CompetitionActivity, Competition, Cohort, TestQuiz,
@@ -179,8 +180,18 @@ class TriviaGroupMemberManageView(DetailView):
             form = QuickUserCreationForm(request.POST)
             if form.is_valid():
                 try:
+                    # Respect max capacity
+                    if group.members.count() >= group.max_members:
+                        messages.error(request, 'Group is at maximum capacity.')
+                        return redirect('group_member_manage', pk=group.pk)
+
                     user = form.save()
-                    messages.success(request, f'User {user.get_full_name()} created successfully with temporary password "TempPass123!"')
+                    # Automatically add the newly created user to this group's members
+                    group.members.add(user)
+                    messages.success(
+                        request,
+                        f'User {user.get_full_name() or user.email} created and added to the group successfully. Temporary password: "TempPass123!"'
+                    )
                     return redirect('group_member_manage', pk=group.pk)
                 except Exception as e:
                     messages.error(request, f'Error creating user: {str(e)}')
@@ -677,6 +688,80 @@ class CompetitionActivityUpdateView(LoginRequiredMixin, SuccessMessageMixin, Upd
         else:
             return self.form_invalid(form)
 
+
+class UserPerformanceView(DetailView):
+    model = MyUser
+    template_name = 'home/user_performance.html'
+    context_object_name = 'user_obj'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.object
+
+        # Individual attempts stats
+        individual_attempts = (
+            TestQuizAttempt.objects
+            .filter(user=user)
+            .select_related('quiz')
+            .order_by('-created_at')
+        )
+        context['individual_attempts'] = individual_attempts[:10]
+        context['total_individual_attempts'] = individual_attempts.count()
+        context['avg_individual_score'] = individual_attempts.aggregate(avg=Avg('score'))['avg']
+        context['best_individual_score'] = individual_attempts.aggregate(best=models.Max('score'))['best']
+        context['completed_individual_attempts'] = individual_attempts.filter(status='completed').count()
+        context['completion_rate'] = (
+            (context['completed_individual_attempts'] / context['total_individual_attempts'] * 100)
+            if context['total_individual_attempts'] else 0
+        )
+
+        # Individual points from responses (if tracked)
+        user_points = (
+            UserResponse.objects
+            .filter(attempt__user=user)
+            .aggregate(total=models.Sum('points_awarded'))['total']
+        ) or 0
+        context['individual_points'] = user_points
+
+        # Group contribution stats
+        group_responses = GroupResponse.objects.filter(responded_by=user)
+        context['group_answers_count'] = group_responses.count()
+        context['group_points'] = group_responses.aggregate(total=models.Sum('points_awarded'))['total'] or 0
+        context['recent_group_responses'] = (
+            group_responses.select_related('attempt__quiz', 'group').order_by('-created_at')[:10]
+        )
+
+        # Memberships
+        context['member_groups'] = user.trivia_groups.all()
+
+        # Ranking chart data from UserRanking.metadata (monthly buckets {'YYYY-MM': points})
+        try:
+            ranking = getattr(user, 'ranking', None)
+            meta = (ranking.metadata or {}) if ranking else {}
+            # Build last 6 months window to ensure chart has axes
+            from datetime import date
+            today = timezone.now().date()
+            months = []
+            y, m = today.year, today.month
+            for _ in range(6):
+                months.append(f"{y:04d}-{m:02d}")
+                m -= 1
+                if m == 0:
+                    m = 12
+                    y -= 1
+            months.reverse()
+            # If meta has keys outside window, merge and sort
+            keys = set(months) | set(meta.keys())
+            labels = sorted(keys)
+            data = [int((meta or {}).get(k, 0) or 0) for k in labels]
+            context['ranking_chart_labels_json'] = json.dumps(labels)
+            context['ranking_chart_data_json'] = json.dumps(data)
+        except Exception:
+            # Fallback to empty series
+            context['ranking_chart_labels_json'] = json.dumps([])
+            context['ranking_chart_data_json'] = json.dumps([])
+
+        return context
 
 class CompetitionActivityDetailView(DetailView):
     model = CompetitionActivity

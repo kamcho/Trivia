@@ -118,9 +118,15 @@
                                 <p class="text-slate-400 text-sm">Patron</p>
                             </div>
                         </div>
-                        <span class="px-2 py-1 text-xs font-semibold rounded bg-indigo-900/30 text-indigo-300 border border-indigo-700/50">
-                            Leader
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 text-xs font-semibold rounded bg-indigo-900/30 text-indigo-300 border border-indigo-700/50">
+                                Leader
+                            </span>
+                            <a href="{% url 'user_performance' group.patron.pk %}"
+                               class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-md transition-colors">
+                                View Analytics
+                            </a>
+                        </div>
                     </div>
                     
                     <div class="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
@@ -135,9 +141,15 @@
                                 <p class="text-slate-400 text-sm">Captain</p>
                             </div>
                         </div>
-                        <span class="px-2 py-1 text-xs font-semibold rounded bg-emerald-900/30 text-emerald-300 border border-emerald-700/50">
-                            Captain
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 text-xs font-semibold rounded bg-emerald-900/30 text-emerald-300 border border-emerald-700/50">
+                                Captain
+                            </span>
+                            <a href="{% url 'user_performance' group.captain.pk %}"
+                               class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-md transition-colors">
+                                View Analytics
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,16 +164,20 @@
                 {% if members %}
                     <div class="space-y-3">
                         {% for member in members %}
-                            <div class="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                            <div class="flex items-center justify-between gap-3 p-3 bg-slate-700/30 rounded-lg">
                                 <div class="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center">
                                     <span class="text-white font-semibold text-xs">
                                         {{ member.first_name.0|default:member.email.0 }}{{ member.last_name.0|default:"" }}
                                     </span>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <p class="text-slate-200 text-sm font-medium">{{ member.get_full_name|default:member.email }}</p>
                                     <p class="text-slate-400 text-xs">Member</p>
                                 </div>
+                                <a href="{% url 'user_performance' member.pk %}"
+                                   class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-md transition-colors">
+                                    View Analytics
+                                </a>
                             </div>
                         {% endfor %}
                     </div>
@@ -282,7 +298,12 @@
                 <tbody class="text-slate-200 divide-y divide-slate-700/40">
                     {% for m in members_with_stats %}
                     <tr>
-                        <td class="py-2 pr-4">{{ m.get_full_name|default:m.email }}</td>
+                        <td class="py-2 pr-4">
+                            <a href="{% url 'user_performance' m.pk %}"
+                               class="text-indigo-400 hover:text-indigo-300">
+                                {{ m.get_full_name|default:m.email }}
+                            </a>
+                        </td>
                         <td class="py-2 px-4">{{ m.answers_count|default:0 }}</td>
                         <td class="py-2 px-4">{{ m.group_points|default:0 }}</td>
                     </tr>

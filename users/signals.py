@@ -168,3 +168,6 @@ This notification was automatically sent from ToursKe when a user completed thei
         except Exception as e:
             # Log the error but don't break profile updates
             print(f"❌ Failed to send profile completion notification: {e}")
+
+
+ 

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Performance · {{ user_obj.get_full_name|default:user_obj.email }} · BibleTrivia{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function() {
+    const labels = JSON.parse('{{ ranking_chart_labels_json|escapejs }}');
+    const dataPoints = JSON.parse('{{ ranking_chart_data_json|escapejs }}');
+    const ctx = document.getElementById('rankingTrendChart');
+    if (!ctx) return;
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Monthly Points',
+          data: dataPoints,
+          fill: false,
+          borderColor: 'rgb(99, 179, 237)',
+          backgroundColor: 'rgb(99, 179, 237)',
+          tension: 0.2,
+          pointRadius: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: { color: '#cbd5e1' }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#94a3b8' },
+            grid: { color: 'rgba(148,163,184,0.2)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#94a3b8' },
+            grid: { color: 'rgba(148,163,184,0.2)' }
+          }
+        }
+      }
+    });
+  })();
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="py-10">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold bg-gradient-to-r from-emerald-300 to-cyan-300 bg-clip-text text-transparent">
+          {{ user_obj.get_full_name|default:user_obj.email }}
+        </h1>
+        <p class="text-slate-400">User Performance Analytics</p>
+      </div>
+      <a href="javascript:history.back()" class="text-sm text-indigo-400 hover:text-indigo-300">← Back</a>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-sm">Individual Attempts</p>
+        <p class="text-2xl font-bold text-slate-100">{{ total_individual_attempts|default:0 }}</p>
+      </div>
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-sm">Avg Score</p>
+        {% with s=avg_individual_score %}
+          {% if s %}
+            <span class="inline-block px-3 py-1 rounded-md text-sm font-semibold border
+              {% if s >= 80 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+              {% elif s >= 50 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+              {% else %} bg-rose-600/20 text-rose-200 border-rose-700/50 {% endif %}">
+              {{ s|floatformat:1 }}
+            </span>
+          {% else %}
+            <span class="text-slate-400">—</span>
+          {% endif %}
+        {% endwith %}
+      </div>
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-sm">Best Score</p>
+        {% with s=best_individual_score %}
+          {% if s %}
+            <span class="inline-block px-3 py-1 rounded-md text-sm font-semibold border
+              {% if s >= 80 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+              {% elif s >= 50 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+              {% else %} bg-rose-600/20 text-rose-200 border-rose-700/50 {% endif %}">
+              {{ s }}
+            </span>
+          {% else %}
+            <span class="text-slate-400">—</span>
+          {% endif %}
+        {% endwith %}
+      </div>
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-sm">Completion Rate</p>
+        {% with s=completion_rate %}
+          <span class="inline-block px-3 py-1 rounded-md text-sm font-semibold border
+            {% if s >= 80 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+            {% elif s >= 50 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+            {% else %} bg-rose-600/20 text-rose-200 border-rose-700/50 {% endif %}">
+            {{ s|floatformat:1 }}%
+          </span>
+        {% endwith %}
+      </div>
+    </div>
+
+    <!-- Points cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-sm">Individual Points</p>
+        {% with p=individual_points|default:0 %}
+          <span class="inline-block px-3 py-1 rounded-md text-sm font-semibold border
+            {% if p >= 200 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+            {% elif p >= 100 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+            {% else %} bg-slate-600/30 text-slate-200 border-slate-600/50 {% endif %}">
+            {{ p }} pts
+          </span>
+        {% endwith %}
+      </div>
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-sm">Group Contribution Points</p>
+        {% with p=group_points|default:0 %}
+          <span class="inline-block px-3 py-1 rounded-md text-sm font-semibold border
+            {% if p >= 200 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+            {% elif p >= 100 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+            {% else %} bg-slate-600/30 text-slate-200 border-slate-600/50 {% endif %}">
+            {{ p }} pts
+          </span>
+        {% endwith %}
+      </div>
+    </div>
+
+    <!-- Ranking Trend Chart -->
+    <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 mb-10">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-slate-100">Monthly Points Trend</h3>
+      </div>
+      <canvas id="rankingTrendChart" height="80"></canvas>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Recent Individual Attempts -->
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-slate-100">Recent Individual Attempts</h3>
+          <div class="text-sm text-slate-400">Total: {{ total_individual_attempts|default:0 }}</div>
+        </div>
+        {% if individual_attempts %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left">
+            <thead class="text-slate-300 border-b border-slate-700/50">
+              <tr>
+                <th class="py-2 pr-4">Quiz</th>
+                <th class="py-2 px-4">Score</th>
+                <th class="py-2 px-4">Completed</th>
+                <th class="py-2 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-200 divide-y divide-slate-700/40">
+              {% for a in individual_attempts %}
+              <tr>
+                <td class="py-2 pr-4"><a href="{% url 'quiz_detail' slug=a.quiz.slug %}" class="text-indigo-400 hover:text-indigo-300">{{ a.quiz.name }}</a></td>
+                <td class="py-2 px-4">
+                  {% with s=a.score|default:0 %}
+                  <span class="inline-block px-2 py-0.5 rounded-md text-xs font-semibold border
+                    {% if s >= 80 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+                    {% elif s >= 50 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+                    {% else %} bg-rose-600/20 text-rose-200 border-rose-700/50 {% endif %}">
+                    {{ s }}
+                  </span>
+                  {% endwith %}
+                </td>
+                <td class="py-2 px-4">{{ a.completed_at|date:'Y-m-d H:i'|default:'—' }}</td>
+                <td class="py-2 px-4 capitalize">{{ a.status }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-slate-400 text-sm">No individual attempts yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Recent Group Contributions -->
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-slate-100">Recent Group Contributions</h3>
+          <div class="text-sm text-slate-400">Answers: {{ group_answers_count|default:0 }}</div>
+        </div>
+        {% if recent_group_responses %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left">
+            <thead class="text-slate-300 border-b border-slate-700/50">
+              <tr>
+                <th class="py-2 pr-4">Group</th>
+                <th class="py-2 px-4">Quiz</th>
+                <th class="py-2 px-4">Points</th>
+                <th class="py-2 px-4">When</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-200 divide-y divide-slate-700/40">
+              {% for r in recent_group_responses %}
+              <tr>
+                <td class="py-2 pr-4">{{ r.group.name }}</td>
+                <td class="py-2 px-4">{{ r.attempt.quiz.name }}</td>
+                <td class="py-2 px-4">
+                  {% with p=r.points_awarded|default:0 %}
+                  <span class="inline-block px-2 py-0.5 rounded-md text-xs font-semibold border
+                    {% if p >= 5 %} bg-emerald-600/20 text-emerald-200 border-emerald-700/50
+                    {% elif p >= 2 %} bg-amber-600/20 text-amber-200 border-amber-700/50
+                    {% else %} bg-slate-600/30 text-slate-200 border-slate-600/50 {% endif %}">
+                    {{ p }}
+                  </span>
+                  {% endwith %}
+                </td>
+                <td class="py-2 px-4">{{ r.created_at|date:'Y-m-d H:i' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-slate-400 text-sm">No group responses yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Memberships -->
+    <div class="mt-10 bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+      <h3 class="text-xl font-bold text-slate-100 mb-4">Groups</h3>
+      {% if member_groups %}
+      <ul class="space-y-2">
+        {% for g in member_groups %}
+        <li class="flex items-center justify-between bg-slate-700/30 rounded-lg px-4 py-2">
+          <span class="text-slate-200">{{ g.name }}</span>
+          <a href="{% url 'group_detail' slug=g.slug %}" class="text-xs text-indigo-400 hover:text-indigo-300">View Group →</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-slate-400 text-sm">No group memberships found.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
