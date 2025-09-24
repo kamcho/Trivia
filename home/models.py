@@ -1240,4 +1240,144 @@ def update_group_ranking_on_response(sender, instance, created, **kwargs):
     ranking.metadata = _bump_monthly_points(ranking.metadata or {}, timezone.now(), delta)
     ranking.save(update_fields=['points', 'penalty', 'metadata', 'updated_at'])
 
-    
+
+class Challenge(TimeStampedModel):
+    """
+    Container for multi-participant challenges in strict mode:
+    - mode='individual' (users only) OR mode='group' (groups only)
+    Supports multiple rounds; winner is best-of N (majority of rounds).
+    Standings are computed from linked attempts via ChallengeRoundAttempt.
+    """
+    MODE_CHOICES = [
+        ('individual', 'Individual'),
+        ('group', 'Group'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('expired', 'Expired'),
+    ]
+
+    name = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    mode = models.CharField(max_length=12, choices=MODE_CHOICES)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pending')
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    # If null, treat as single-round; if set, should be odd (e.g., 3, 5) for majority
+    best_of = models.PositiveIntegerField(null=True, blank=True, help_text='Odd number of rounds for best-of; null for single-round')
+    max_participants = models.PositiveIntegerField(default=2, help_text='Maximum number of participants allowed in this challenge')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_challenges')
+    metadata = models.JSONField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=["mode", "status"]),
+            models.Index(fields=["scheduled_at"]),
+        ]
+
+    def __str__(self):
+        return f"Challenge({self.id}, {self.mode}, {self.status})"
+
+    def clean(self):
+        if self.expires_at and self.scheduled_at and self.expires_at < self.scheduled_at:
+            raise models.ValidationError('expires_at must be after scheduled_at')
+        if self.best_of is not None:
+            if self.best_of <= 0:
+                raise models.ValidationError('best_of must be a positive integer')
+            if self.best_of % 2 == 0:
+                raise models.ValidationError('best_of should be an odd number to ensure a clear majority')
+        if self.max_participants is None or self.max_participants < 2:
+            raise models.ValidationError('max_participants must be at least 2')
+
+
+class ChallengeParticipant(TimeStampedModel):
+    """
+    Participant in a challenge. Exactly one of user or group must be set.
+    All participants must match the challenge.mode.
+    """
+    ROLE_CHOICES = [
+        ('challenger', 'Challenger'),
+        ('invitee', 'Invitee'),
+    ]
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='participants')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='challenge_participations')
+    group = models.ForeignKey('TriviaGroup', on_delete=models.CASCADE, null=True, blank=True, related_name='challenge_participations')
+    role = models.CharField(max_length=12, choices=ROLE_CHOICES, default='invitee')
+    is_active = models.BooleanField(default=True)
+    team_name = models.CharField(max_length=100, blank=True)
+    joined_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["challenge"]),
+            models.Index(fields=["is_active"]),
+        ]
+
+    def __str__(self):
+        who = self.user or self.group
+        return f"Participant({who})"
+
+    def clean(self):
+        if bool(self.user) == bool(self.group):
+            raise models.ValidationError('Exactly one of user or group must be set for a participant.')
+        if self.challenge_id:
+            if self.challenge.mode == 'individual' and not self.user:
+                raise models.ValidationError('Challenge in individual mode requires user participants.')
+            if self.challenge.mode == 'group' and not self.group:
+                raise models.ValidationError('Challenge in group mode requires group participants.')
+
+
+class ChallengeRound(TimeStampedModel):
+    """
+    A round in a challenge. Optionally specify the quiz for the round.
+    """
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='rounds')
+    round_number = models.PositiveIntegerField(default=1)
+    quiz = models.ForeignKey('TestQuiz', on_delete=models.SET_NULL, null=True, blank=True, related_name='challenge_rounds')
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    metadata = models.JSONField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['round_number', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['challenge', 'round_number'], name='uniq_challenge_round_number')
+        ]
+
+    def __str__(self):
+        return f"ChallengeRound({self.challenge_id}, #{self.round_number})"
+
+
+class ChallengeRoundAttempt(TimeStampedModel):
+    """
+    Links existing attempts to a challenge participant (and round).
+    Exactly one of user_attempt or group_attempt must be set matching the challenge mode.
+    """
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='linked_attempts')
+    round = models.ForeignKey(ChallengeRound, on_delete=models.CASCADE, null=True, blank=True, related_name='linked_attempts')
+    participant = models.ForeignKey(ChallengeParticipant, on_delete=models.CASCADE, related_name='linked_attempts')
+    user_attempt = models.ForeignKey('TestQuizAttempt', on_delete=models.CASCADE, null=True, blank=True, related_name='challenge_links')
+    group_attempt = models.ForeignKey('GroupTestQuizAttempt', on_delete=models.CASCADE, null=True, blank=True, related_name='challenge_links')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["challenge"]),
+        ]
+        constraints = [
+            models.CheckConstraint(check=(
+                (Q(user_attempt__isnull=False) & Q(group_attempt__isnull=True)) |
+                (Q(user_attempt__isnull=True) & Q(group_attempt__isnull=False))
+            ), name='chk_one_attempt_linked'),
+        ]
+
+    def clean(self):
+        # Enforce strict mode consistency
+        if self.participant_id and self.challenge_id:
+            if self.challenge.mode == 'individual' and not self.user_attempt:
+                raise models.ValidationError('Individual mode requires a user_attempt.')
+            if self.challenge.mode == 'group' and not self.group_attempt:
+                raise models.ValidationError('Group mode requires a group_attempt.')

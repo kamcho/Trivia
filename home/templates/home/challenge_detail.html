@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Challenge · {{ challenge.name|default:('Challenge #'|add:challenge.id) }} · BibleTrivia{% endblock %}
+
+{% block content %}
+<section class="py-10">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-100">{{ challenge.name|default:"Challenge" }}</h1>
+        <p class="text-slate-400 text-sm">Mode: {{ challenge.mode }} · Status: {{ challenge.status }} · Best of: {{ challenge.best_of|default:1 }}</p>
+      </div>
+      <a href="javascript:history.back()" class="text-slate-400 hover:text-slate-200 text-sm">← Back</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-slate-100 mb-4">Rounds</h2>
+          {% for r in rounds %}
+            <div class="flex items-center justify-between py-3 border-b border-slate-700/40 last:border-none">
+              <div>
+                <div class="text-slate-200 font-medium">Round {{ r.round_number }}</div>
+                <div class="text-slate-400 text-sm">Quiz: {{ r.quiz.name|default:"Not set" }}</div>
+              </div>
+              {% if user == challenge.created_by %}
+                <form method="post" action="{% url 'challenge_set_round_quiz' challenge.pk r.round_number %}" class="flex items-center gap-2">
+                  {% csrf_token %}
+                  <select name="quiz_id" class="rounded-md bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200">
+                    {% for q in quizzes %}
+                      <option value="{{ q.id }}" {% if r.quiz and r.quiz.id == q.id %}selected{% endif %}>{{ q.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-md">Set</button>
+                </form>
+              {% endif %}
+            </div>
+          {% empty %}
+            <p class="text-slate-400 text-sm">No rounds found.</p>
+          {% endfor %}
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-slate-100 mb-4">Standings</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="text-slate-300 border-b border-slate-700/50">
+                <tr>
+                  <th class="text-left py-2 pr-4">Participant</th>
+                  <th class="text-right py-2 px-4">Points</th>
+                  <th class="text-right py-2 px-4">Total Time (s)</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-200">
+                {% for row in standings %}
+                <tr class="border-b border-slate-700/30 last:border-none">
+                  <td class="py-2 pr-4">
+                    {% if row.participant.user %}
+                      {{ row.participant.user.get_full_name|default:row.participant.user.username }}
+                    {% else %}
+                      {{ row.participant.group.name }}
+                    {% endif %}
+                  </td>
+                  <td class="py-2 px-4 text-right">{{ row.total_score }}</td>
+                  <td class="py-2 px-4 text-right">{{ row.total_time }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-slate-100 mb-4">Per-round Winners</h2>
+          <div class="space-y-3">
+            {% for rr in round_results %}
+              <div>
+                <div class="text-slate-300 text-sm">Round {{ rr.round.round_number }} · Best Score: {{ rr.best_score|default:0 }}</div>
+                <div class="text-slate-400 text-sm">Winners:
+                  {% for p in rr.winners %}
+                    {% if p.user %}{{ p.user.get_full_name|default:p.user.username }}{% else %}{{ p.group.name }}{% endif %}{% if not forloop.last %}, {% endif %}
+                  {% empty %}
+                    None
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-slate-100 mb-4">Participants</h2>
+          <ul class="space-y-2">
+            {% for p in participants %}
+              <li class="flex items-center justify-between">
+                <div class="text-slate-200">
+                  {% if p.user %}
+                    {{ p.user.get_full_name|default:p.user.username }}
+                  {% else %}
+                    {{ p.group.name }}
+                  {% endif %}
+                </div>
+                <div>
+                  {% if p.is_active %}
+                    <span class="text-emerald-300 text-xs">Accepted</span>
+                  {% else %}
+                    <span class="text-slate-400 text-xs">Pending</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+          <div class="mt-4 space-x-2">
+            {% if challenge.mode == 'individual' and user.is_authenticated %}
+              <form method="post" action="{% url 'challenge_accept' challenge.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-md text-sm">Accept</button>
+              </form>
+              <form method="post" action="{% url 'challenge_decline' challenge.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded-md text-sm">Decline</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-slate-100 mb-4">Notes</h2>
+          <p class="text-slate-400 text-sm">This challenge activates as soon as the first invitee accepts. Best-of rounds are pre-created without a quiz; the creator sets a quiz for each round.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

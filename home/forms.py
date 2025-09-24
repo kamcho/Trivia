@@ -4,6 +4,8 @@ from .models import (
     ActivityCategory, CompetitionActivity, Competition, Cohort, TestQuiz,
     ActivityInstruction, ActivityRule, CompetitionRegistrationWindow, CompetitionScheduleItem
 )
+from users.models import MyUser
+from .models import Challenge
 
 
 class ChurchForm(forms.ModelForm):
@@ -28,6 +30,56 @@ class ChurchForm(forms.ModelForm):
             'established_year': forms.NumberInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'min': 1}),
             'is_active': forms.CheckboxInput(attrs={'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'}),
         }
+
+
+class ChallengeCreateForm(forms.ModelForm):
+    participants_users = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=MyUser.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'size': 8}),
+        label='User Participants'
+    )
+    participants_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=TriviaGroup.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'size': 8}),
+        label='Group Participants'
+    )
+
+    class Meta:
+        model = Challenge
+        fields = ['name', 'description', 'mode', 'best_of', 'max_participants', 'scheduled_at', 'expires_at']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Challenge name'}),
+            'description': forms.Textarea(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'rows': 3}),
+            'mode': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
+            'best_of': forms.NumberInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'min': 1}),
+            'max_participants': forms.NumberInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'min': 2}),
+            'scheduled_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
+            'expires_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        mode = cleaned.get('mode')
+        max_participants = cleaned.get('max_participants') or 0
+        users = self.cleaned_data.get('participants_users') or MyUser.objects.none()
+        groups = self.cleaned_data.get('participants_groups') or TriviaGroup.objects.none()
+        if mode == 'individual':
+            if groups.exists():
+                self.add_error('participants_groups', 'Do not select groups in individual mode.')
+            if users.count() < 1:
+                self.add_error('participants_users', 'Select at least one user to invite.')
+            if users.count() + 1 > max_participants:  # +1 for creator
+                self.add_error('participants_users', f'Total participants would exceed max_participants ({max_participants}).')
+        elif mode == 'group':
+            if users.exists():
+                self.add_error('participants_users', 'Do not select users in group mode.')
+            if groups.count() < 1:
+                self.add_error('participants_groups', 'Select at least one group to invite.')
+            if groups.count() + 1 > max_participants:
+                self.add_error('participants_groups', f'Total participants would exceed max_participants ({max_participants}).')
+        return cleaned
 
 
 class ChoiceForm(forms.ModelForm):

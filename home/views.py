@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView, CreateView, DetailView, UpdateView, ListView, DeleteView
+from django.views import View
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
@@ -13,12 +14,13 @@ from .models import (
     Church, TriviaGroup, QuestionCategory, Question, Choice,
     ActivityCategory, CompetitionActivity, Competition, Cohort, TestQuiz,
     TestQuizAttempt, GroupTestQuizAttempt, UserResponse, GroupResponse,
-    ActivityInstruction, ActivityRule
+    ActivityInstruction, ActivityRule,
+    Challenge, ChallengeParticipant, ChallengeRound, ChallengeRoundAttempt
 )
 from .forms import (
     ChurchForm, TriviaGroupForm, QuestionCategoryForm, QuestionForm, ChoiceForm,
     ActivityCategoryForm, CompetitionActivityForm, CompetitionForm, TestQuizForm,
-    ActivityInstructionForm, ActivityRuleForm
+    ActivityInstructionForm, ActivityRuleForm, ChallengeCreateForm
 )
 from .competition_forms import CompetitionBookingForm
 from django.forms import inlineformset_factory
@@ -33,6 +35,193 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['top_churches'] = Church.objects.filter(is_active=True)[:5]
         return context
+
+
+class ChallengeCreateView(LoginRequiredMixin, CreateView):
+    model = Challenge
+    form_class = ChallengeCreateForm
+    template_name = 'home/challenge_create.html'
+
+    def form_valid(self, form):
+        self.object: Challenge = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.status = 'pending'
+        self.object.save()
+        # Add creator as challenger participant
+        creator_part = ChallengeParticipant.objects.create(
+            challenge=self.object,
+            user=self.request.user if self.object.mode == 'individual' else None,
+            group=None,
+            role='challenger',
+            is_active=True,
+            joined_at=timezone.now()
+        )
+        # Add invitees
+        users = form.cleaned_data.get('participants_users')
+        groups = form.cleaned_data.get('participants_groups')
+        if self.object.mode == 'individual' and users:
+            for u in users:
+                if u == self.request.user:
+                    continue
+                ChallengeParticipant.objects.create(
+                    challenge=self.object,
+                    user=u,
+                    role='invitee',
+                    is_active=False
+                )
+        elif self.object.mode == 'group' and groups:
+            for g in groups:
+                ChallengeParticipant.objects.create(
+                    challenge=self.object,
+                    group=g,
+                    role='invitee',
+                    is_active=False
+                )
+        # Pre-create rounds per best_of or single round
+        rounds = self.object.best_of or 1
+        for i in range(1, rounds + 1):
+            ChallengeRound.objects.create(challenge=self.object, round_number=i)
+
+        messages.success(self.request, 'Challenge created. Invitees can accept to activate.')
+        return redirect('challenge_detail', pk=self.object.pk)
+
+
+class ChallengeDetailView(LoginRequiredMixin, DetailView):
+    model = Challenge
+    template_name = 'home/challenge_detail.html'
+    context_object_name = 'challenge'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ch: Challenge = self.object
+        participants = list(ch.participants.select_related('user', 'group'))
+        rounds = list(ch.rounds.select_related('quiz').order_by('round_number'))
+
+        # Compute standings
+        standings = []
+        for p in participants:
+            # Aggregate scores from linked attempts
+            if ch.mode == 'individual':
+                qs = ChallengeRoundAttempt.objects.filter(participant=p, challenge=ch, user_attempt__isnull=False).select_related('user_attempt')
+                total_score = qs.aggregate(t=Sum('user_attempt__score'))['t'] or 0
+                # Completion time: sum of durations if available
+                total_time = 0
+                for link in qs:
+                    att = link.user_attempt
+                    if getattr(att, 'completed_at', None) and getattr(att, 'created_at', None):
+                        total_time += int((att.completed_at - att.created_at).total_seconds())
+            else:
+                qs = ChallengeRoundAttempt.objects.filter(participant=p, challenge=ch, group_attempt__isnull=False).select_related('group_attempt')
+                total_score = qs.aggregate(t=Sum('group_attempt__score'))['t'] or 0
+                total_time = 0
+                for link in qs:
+                    att = link.group_attempt
+                    if getattr(att, 'completed_at', None) and getattr(att, 'created_at', None):
+                        total_time += int((att.completed_at - att.created_at).total_seconds())
+
+            standings.append({
+                'participant': p,
+                'total_score': total_score,
+                'total_time': total_time,
+            })
+
+        # Per-round winners (by highest score that round)
+        round_results = []
+        for r in rounds:
+            round_row = {'round': r, 'scores': []}
+            best_score = None
+            winners = []
+            for p in participants:
+                if ch.mode == 'individual':
+                    qs = ChallengeRoundAttempt.objects.filter(challenge=ch, round=r, participant=p, user_attempt__isnull=False).select_related('user_attempt')
+                    score = qs.aggregate(t=Sum('user_attempt__score'))['t'] or 0
+                else:
+                    qs = ChallengeRoundAttempt.objects.filter(challenge=ch, round=r, participant=p, group_attempt__isnull=False).select_related('group_attempt')
+                    score = qs.aggregate(t=Sum('group_attempt__score'))['t'] or 0
+                round_row['scores'].append({'participant': p, 'score': score})
+                if best_score is None or score > best_score:
+                    best_score = score
+                    winners = [p]
+                elif score == best_score:
+                    winners.append(p)
+            round_row['best_score'] = best_score
+            round_row['winners'] = winners
+            round_results.append(round_row)
+
+        # Overall ranking with tie-breakers: total points, then total_time (smaller is better)
+        standings_sorted = sorted(standings, key=lambda x: (-x['total_score'], x['total_time']))
+        ctx.update({
+            'participants': participants,
+            'rounds': rounds,
+            'standings': standings_sorted,
+            'round_results': round_results,
+            'quizzes': TestQuiz.objects.filter(is_active=True),
+        })
+        return ctx
+
+
+class ChallengeAcceptView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        ch = get_object_or_404(Challenge, pk=pk)
+        # Find participant record for this user (individual mode)
+        if ch.mode == 'individual':
+            p = get_object_or_404(ChallengeParticipant, challenge=ch, user=request.user)
+            p.is_active = True
+            p.joined_at = timezone.now()
+            p.save(update_fields=['is_active', 'joined_at'])
+        else:
+            # For group mode, allow patron/captain to accept on behalf of their group
+            grp_id = request.POST.get('group_id')
+            p = get_object_or_404(ChallengeParticipant, challenge=ch, group_id=grp_id)
+            # Simple permission check
+            if not (request.user == p.group.patron or request.user == p.group.captain):
+                messages.error(request, 'Only the group patron or captain can accept.')
+                return redirect('challenge_detail', pk=pk)
+            p.is_active = True
+            p.joined_at = timezone.now()
+            p.save(update_fields=['is_active', 'joined_at'])
+
+        # Activation rule: becomes active when at least 1 invitee accepts
+        if ch.status == 'pending':
+            ch.status = 'active'
+            ch.save(update_fields=['status'])
+        messages.success(request, 'You have accepted the challenge.')
+        return redirect('challenge_detail', pk=pk)
+
+
+class ChallengeDeclineView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        ch = get_object_or_404(Challenge, pk=pk)
+        if ch.mode == 'individual':
+            p = get_object_or_404(ChallengeParticipant, challenge=ch, user=request.user)
+            p.is_active = False
+            p.save(update_fields=['is_active'])
+        else:
+            grp_id = request.POST.get('group_id')
+            p = get_object_or_404(ChallengeParticipant, challenge=ch, group_id=grp_id)
+            if not (request.user == p.group.patron or request.user == p.group.captain):
+                messages.error(request, 'Only the group patron or captain can decline.')
+                return redirect('challenge_detail', pk=pk)
+            p.is_active = False
+            p.save(update_fields=['is_active'])
+        messages.info(request, 'You have declined the challenge.')
+        return redirect('challenge_detail', pk=pk)
+
+
+class ChallengeSetRoundQuizView(LoginRequiredMixin, View):
+    def post(self, request, pk, round_number):
+        ch = get_object_or_404(Challenge, pk=pk)
+        # Only creator can set round quiz for now
+        if request.user != ch.created_by:
+            messages.error(request, 'Only the challenge creator can set the round quiz.')
+            return redirect('challenge_detail', pk=pk)
+        r = get_object_or_404(ChallengeRound, challenge=ch, round_number=round_number)
+        quiz_id = request.POST.get('quiz_id')
+        quiz = get_object_or_404(TestQuiz, pk=quiz_id)
+        r.quiz = quiz
+        r.save(update_fields=['quiz'])
+        messages.success(request, f'Round {round_number} quiz set.')
+        return redirect('challenge_detail', pk=pk)
 
 
 class ChurchCreateView(LoginRequiredMixin, CreateView):

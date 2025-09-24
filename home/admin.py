@@ -4,7 +4,9 @@ from .models import (
     Question, Choice, ActivityCategory, ActivityInstruction, ActivityRule, CompetitionMedia,
     CompetitionEligibility, CompetitionRegistrationWindow, CompetitionBooking, CompetitionContact,
     CompetitionVenue, CompetitionScheduleItem, CompetitionSponsor, CompetitionPolicy,
-    CompetitionFAQ, CompetitionResource, CompetitionSocialLink, UserRanking
+    CompetitionFAQ, CompetitionResource, CompetitionSocialLink, UserRanking,
+    Challenge, ChallengeParticipant, ChallengeRound, ChallengeRoundAttempt,
+    TestQuiz, TestQuizAttempt, GroupTestQuizAttempt
 )
 from .forms import CompetitionRegistrationWindowForm, CompetitionScheduleItemForm
 admin.site.register(Question)
@@ -15,6 +17,60 @@ admin.site.register(ActivityRule)
 admin.site.register(Competition)
 admin.site.register(CompetitionActivity)
 admin.site.register(UserRanking)
+
+@admin.register(TestQuiz)
+class TestQuizAdmin(admin.ModelAdmin):
+    list_display = ('name', 'difficulty', 'quiz_type', 'participation', 'level', 'is_active')
+    list_filter = ('difficulty', 'quiz_type', 'participation', 'level', 'is_active')
+    search_fields = ('name', 'slug', 'description')
+    ordering = ('name',)
+
+@admin.register(TestQuizAttempt)
+class TestQuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'quiz', 'user', 'attempt_number', 'status', 'score', 'created_at')
+    list_filter = ('status', 'quiz__difficulty', 'quiz__quiz_type')
+    search_fields = ('uuid', 'quiz__name', 'user__username', 'user__email')
+    autocomplete_fields = ('quiz', 'user')
+    ordering = ('-created_at',)
+
+@admin.register(GroupTestQuizAttempt)
+class GroupTestQuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'quiz', 'group', 'attempt_number', 'status', 'score', 'created_at')
+    list_filter = ('status', 'quiz__difficulty', 'quiz__quiz_type')
+    search_fields = ('uuid', 'quiz__name', 'group__name')
+    autocomplete_fields = ('quiz', 'group')
+    ordering = ('-created_at',)
+@admin.register(Challenge)
+class ChallengeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'mode', 'status', 'best_of', 'scheduled_at', 'expires_at', 'created_by', 'created_at')
+    list_filter = ('mode', 'status')
+    search_fields = ('name', 'description', 'created_by__username')
+    date_hierarchy = 'created_at'
+
+@admin.register(ChallengeParticipant)
+class ChallengeParticipantAdmin(admin.ModelAdmin):
+    list_display = ('challenge', 'user', 'group', 'role', 'is_active', 'joined_at')
+    list_filter = ('role', 'is_active')
+    search_fields = ('challenge__name', 'user__username', 'group__name')
+    autocomplete_fields = ('challenge', 'user', 'group')
+
+@admin.register(ChallengeRound)
+class ChallengeRoundAdmin(admin.ModelAdmin):
+    list_display = ('challenge', 'round_number', 'quiz', 'started_at', 'completed_at')
+    list_filter = ('challenge',)
+    search_fields = ('challenge__name', 'quiz__name')
+    ordering = ('challenge', 'round_number')
+    autocomplete_fields = ('challenge', 'quiz')
+
+@admin.register(ChallengeRoundAttempt)
+class ChallengeRoundAttemptAdmin(admin.ModelAdmin):
+    list_display = ('challenge', 'round', 'participant', 'user_attempt', 'group_attempt', 'created_at')
+    list_filter = ('challenge', 'round')
+    search_fields = (
+        'challenge__name', 'participant__user__username', 'participant__group__name',
+        'user_attempt__quiz__name', 'group_attempt__quiz__name'
+    )
+    autocomplete_fields = ('challenge', 'round', 'participant', 'user_attempt', 'group_attempt')
 @admin.register(CompetitionMedia)
 class CompetitionMediaAdmin(admin.ModelAdmin):
     list_display = ('competition', 'title', 'media_type', 'intro_media', 'order', 'is_active', 'created_at')
