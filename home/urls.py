@@ -10,7 +10,8 @@ from .views import (
     CompetitionCreateView, CompetitionUpdateView, CompetitionDetailView, CompetitionPublicDetailView, CompetitionBookingView, LeaderboardView, AboutView,
     QuizListView, QuizDetailView, QuizTakeView, QuizResultsView, QuizCreateView, QuizUpdateView, QuizDeleteView, QuizManageQuestionsView,
     AttemptHistoryView, AttemptReviewView, GroupAttemptHistoryView, GroupAttemptReviewView, UserPerformanceView,
-    ChallengeCreateView, ChallengeDetailView, ChallengeAcceptView, ChallengeDeclineView, ChallengeSetRoundQuizView
+    ChallengeCreateView, ChallengeDetailView, ChallengeListView, ChallengeAcceptView, ChallengeDeclineView, ChallengeSetRoundQuizView,
+    ChallengeQuickQuizCreateView, ChallengeParticipantApproveView
 )
 
 
@@ -67,11 +68,14 @@ urlpatterns = [
     path('users/<int:pk>/performance/', UserPerformanceView.as_view(), name='user_performance'),
     
     # Challenge URLs
+    path('challenges/', ChallengeListView.as_view(), name='challenge_list'),
     path('challenges/new/', ChallengeCreateView.as_view(), name='challenge_create'),
     path('challenges/<int:pk>/', ChallengeDetailView.as_view(), name='challenge_detail'),
     path('challenges/<int:pk>/accept/', ChallengeAcceptView.as_view(), name='challenge_accept'),
     path('challenges/<int:pk>/decline/', ChallengeDeclineView.as_view(), name='challenge_decline'),
+    path('challenges/<int:pk>/participants/approve/', ChallengeParticipantApproveView.as_view(), name='challenge_participant_approve'),
     path('challenges/<int:pk>/rounds/<int:round_number>/set-quiz/', ChallengeSetRoundQuizView.as_view(), name='challenge_set_round_quiz'),
+    path('challenges/<int:pk>/quizzes/quick-create/', ChallengeQuickQuizCreateView.as_view(), name='challenge_quick_quiz_create'),
     
     # Quiz URLs
     path('quizzes/', QuizListView.as_view(), name='quiz_list'),

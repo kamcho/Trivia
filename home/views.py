@@ -20,7 +20,7 @@ from .models import (
 from .forms import (
     ChurchForm, TriviaGroupForm, QuestionCategoryForm, QuestionForm, ChoiceForm,
     ActivityCategoryForm, CompetitionActivityForm, CompetitionForm, TestQuizForm,
-    ActivityInstructionForm, ActivityRuleForm, ChallengeCreateForm
+    ActivityInstructionForm, ActivityRuleForm, ChallengeCreateForm, QuickQuizCreateForm
 )
 from .competition_forms import CompetitionBookingForm
 from django.forms import inlineformset_factory
@@ -47,46 +47,16 @@ class ChallengeCreateView(LoginRequiredMixin, CreateView):
         self.object.created_by = self.request.user
         self.object.status = 'pending'
         self.object.save()
-        # Add creator as challenger participant
-        creator_part = ChallengeParticipant.objects.create(
-            challenge=self.object,
-            user=self.request.user if self.object.mode == 'individual' else None,
-            group=None,
-            role='challenger',
-            is_active=True,
-            joined_at=timezone.now()
-        )
-        # Add invitees
-        users = form.cleaned_data.get('participants_users')
-        groups = form.cleaned_data.get('participants_groups')
-        if self.object.mode == 'individual' and users:
-            for u in users:
-                if u == self.request.user:
-                    continue
-                ChallengeParticipant.objects.create(
-                    challenge=self.object,
-                    user=u,
-                    role='invitee',
-                    is_active=False
-                )
-        elif self.object.mode == 'group' and groups:
-            for g in groups:
-                ChallengeParticipant.objects.create(
-                    challenge=self.object,
-                    group=g,
-                    role='invitee',
-                    is_active=False
-                )
         # Pre-create rounds per best_of or single round
         rounds = self.object.best_of or 1
         for i in range(1, rounds + 1):
             ChallengeRound.objects.create(challenge=self.object, round_number=i)
 
-        messages.success(self.request, 'Challenge created. Invitees can accept to activate.')
+        messages.success(self.request, 'Challenge created.')
         return redirect('challenge_detail', pk=self.object.pk)
 
 
-class ChallengeDetailView(LoginRequiredMixin, DetailView):
+class ChallengeDetailView(DetailView):
     model = Challenge
     template_name = 'home/challenge_detail.html'
     context_object_name = 'challenge'
@@ -94,7 +64,36 @@ class ChallengeDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ch: Challenge = self.object
-        participants = list(ch.participants.select_related('user', 'group'))
+        # Countdown support values
+        try:
+            ctx['scheduled_at_iso'] = ch.scheduled_at.isoformat() if ch.scheduled_at else None
+        except Exception:
+            ctx['scheduled_at_iso'] = None
+        try:
+            ctx['server_now_iso'] = timezone.now().isoformat()
+        except Exception:
+            ctx['server_now_iso'] = None
+        # Join eligibility flags
+        user = getattr(self.request, 'user', None)
+        is_creator = bool(user and user.is_authenticated and user == ch.created_by)
+        user_is_participant = False
+        if user and getattr(user, 'is_authenticated', False) and ch.mode == 'individual':
+            try:
+                user_is_participant = ChallengeParticipant.objects.filter(challenge=ch, user=user).exists()
+            except Exception:
+                user_is_participant = False
+        can_join_individual = bool(user and user.is_authenticated and (not is_creator) and (ch.mode == 'individual') and (not user_is_participant))
+        # Limit to valid participants (must have user or group, and match challenge mode)
+        base_participants_qs = ch.participants.select_related('user', 'group')
+        if ch.mode == 'individual':
+            base_participants_qs = base_participants_qs.filter(user__isnull=False)
+        else:
+            base_participants_qs = base_participants_qs.filter(group__isnull=False)
+        # Defensive: still ensure at least one identifier exists
+        base_participants_qs = base_participants_qs.filter(
+            models.Q(user__isnull=False) | models.Q(group__isnull=False)
+        )
+        participants = list(base_participants_qs)
         rounds = list(ch.rounds.select_related('quiz').order_by('round_number'))
 
         # Compute standings
@@ -150,42 +149,275 @@ class ChallengeDetailView(LoginRequiredMixin, DetailView):
 
         # Overall ranking with tie-breakers: total points, then total_time (smaller is better)
         standings_sorted = sorted(standings, key=lambda x: (-x['total_score'], x['total_time']))
+        # Inline quick quiz create form (creator only)
+        quiz_form = QuickQuizCreateForm()
+        # Determine if any round actually has meaningful results
+        has_round_results = any(
+            (rr.get('best_score') or 0) > 0 or (rr.get('winners') and len(rr['winners']) > 0)
+            for rr in round_results
+        )
+        # Determine if any attempt exists for this challenge (drives standings visibility)
+        has_any_attempts = ChallengeRoundAttempt.objects.filter(challenge=ch).exists()
+        # Additionally, detect if standings contain any non-zero metric
+        has_standings_results = any((s['total_score'] or 0) > 0 or (s['total_time'] or 0) > 0 for s in standings)
         ctx.update({
             'participants': participants,
             'rounds': rounds,
             'standings': standings_sorted,
             'round_results': round_results,
+            'has_round_results': has_round_results,
+            'has_any_attempts': has_any_attempts,
+            'has_standings_results': has_standings_results,
             'quizzes': TestQuiz.objects.filter(is_active=True),
+            'quiz_form': quiz_form,
+            # Flags to help templates show empty states correctly
+            'any_participant_active': any(getattr(p, 'is_active', False) for p in participants),
+            'any_participant_joined': any(bool(getattr(p, 'joined_at', None)) for p in participants),
+            'is_creator': is_creator,
+            'can_join_individual': can_join_individual,
         })
         return ctx
 
 
+class ChallengeListView(ListView):
+    model = Challenge
+    template_name = 'home/challenge_list.html'
+    context_object_name = 'challenges'
+    paginate_by = 15
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = (
+            Challenge.objects
+            .select_related('created_by')
+            .prefetch_related('participants__user', 'participants__group', 'rounds')
+        )
+        # If authenticated, show challenges related to the user; otherwise show recently created challenges
+        if user.is_authenticated:
+            qs = qs.filter(
+                Q(created_by=user) |
+                Q(participants__user=user) |
+                Q(participants__group__members=user) |
+                Q(participants__group__captain=user) |
+                Q(participants__group__patron=user)
+            ).distinct()
+
+        # Optional filters
+        status_filter = self.request.GET.get('status')
+        if status_filter in ['pending', 'active', 'completed', 'cancelled']:
+            qs = qs.filter(status=status_filter)
+
+        mode_filter = self.request.GET.get('mode')
+        if mode_filter in ['individual', 'group']:
+            qs = qs.filter(mode=mode_filter)
+
+        search_query = (self.request.GET.get('q') or '').strip()
+        if search_query:
+            qs = qs.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
+
+        return qs.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['status_filter'] = self.request.GET.get('status', '')
+        ctx['mode_filter'] = self.request.GET.get('mode', '')
+        ctx['search_query'] = self.request.GET.get('q', '')
+        return ctx
+
 class ChallengeAcceptView(LoginRequiredMixin, View):
     def post(self, request, pk):
         ch = get_object_or_404(Challenge, pk=pk)
+        # If creator clicks this endpoint, do nothing; approval is handled elsewhere
+        if request.user == ch.created_by:
+            messages.info(request, 'Use the Approve button next to a participant to accept join requests.')
+            return redirect('challenge_detail', pk=pk)
         # Find participant record for this user (individual mode)
         if ch.mode == 'individual':
-            p = get_object_or_404(ChallengeParticipant, challenge=ch, user=request.user)
-            p.is_active = True
-            p.joined_at = timezone.now()
-            p.save(update_fields=['is_active', 'joined_at'])
+            # Create a participant record if it doesn't exist to avoid 404 UX
+            p, _created = ChallengeParticipant.objects.get_or_create(
+                challenge=ch,
+                user=request.user,
+                defaults={'role': 'invitee', 'is_active': False}
+            )
+            # Mark as pending request (is_active remains False)
+            if not p.joined_at:
+                p.joined_at = timezone.now()
+            p.save(update_fields=['joined_at'])
+            messages.success(request, 'Join request sent. Awaiting creator approval.')
         else:
             # For group mode, allow patron/captain to accept on behalf of their group
             grp_id = request.POST.get('group_id')
-            p = get_object_or_404(ChallengeParticipant, challenge=ch, group_id=grp_id)
+            if not grp_id:
+                messages.error(request, 'Select a group to accept on behalf of.')
+                return redirect('challenge_detail', pk=pk)
+            p = ChallengeParticipant.objects.filter(challenge=ch, group_id=grp_id).first()
+            if not p:
+                messages.error(request, 'No matching participant for the selected group.')
+                return redirect('challenge_detail', pk=pk)
             # Simple permission check
             if not (request.user == p.group.patron or request.user == p.group.captain):
                 messages.error(request, 'Only the group patron or captain can accept.')
                 return redirect('challenge_detail', pk=pk)
-            p.is_active = True
-            p.joined_at = timezone.now()
-            p.save(update_fields=['is_active', 'joined_at'])
+            # Mark as pending (is_active stays False) and stamp join time
+            if not p.joined_at:
+                p.joined_at = timezone.now()
+            p.save(update_fields=['joined_at'])
+            messages.success(request, 'Join request sent for your group. Awaiting creator approval.')
+        return redirect('challenge_detail', pk=pk)
 
-        # Activation rule: becomes active when at least 1 invitee accepts
+
+class ChallengeParticipantApproveView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        ch = get_object_or_404(Challenge, pk=pk)
+        if request.user != ch.created_by:
+            messages.error(request, 'Only the challenge creator can approve participants.')
+            return redirect('challenge_detail', pk=pk)
+        participant_id = request.POST.get('participant_id')
+        if not participant_id:
+            messages.error(request, 'Missing participant id.')
+            return redirect('challenge_detail', pk=pk)
+        p = get_object_or_404(ChallengeParticipant, pk=participant_id, challenge=ch)
+        p.is_active = True
+        if not p.joined_at:
+            p.joined_at = timezone.now()
+        p.save(update_fields=['is_active', 'joined_at'])
+        # Activation rule: becomes active when at least 1 invitee accepted
         if ch.status == 'pending':
             ch.status = 'active'
             ch.save(update_fields=['status'])
-        messages.success(request, 'You have accepted the challenge.')
+        messages.success(request, 'Participant approved.')
+        return redirect('challenge_detail', pk=pk)
+
+
+class ChallengeQuickQuizCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        ch = get_object_or_404(Challenge, pk=pk)
+        if request.user != ch.created_by and not request.user.is_staff:
+            messages.error(request, 'Only the challenge creator can create quizzes here.')
+            return redirect('challenge_detail', pk=pk)
+        form = QuickQuizCreateForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, 'Please fix errors in the quiz form.')
+            return redirect('challenge_detail', pk=pk)
+        quiz: TestQuiz = form.save(commit=False)
+        # Enforce competition-specific settings
+        quiz.quiz_type = 'Competition'
+        # Participation must match challenge mode
+        quiz.participation = 'Individual' if ch.mode == 'individual' else 'Group'
+        quiz.is_public = False
+        quiz.is_active = True
+        quiz.created_by = request.user
+        quiz.save()
+
+        # Attach selected activities
+        activities = form.cleaned_data.get('activities')
+        if activities:
+            quiz.activities.set(activities)
+        else:
+            quiz.activities.clear()
+
+        # Build questions by difficulty ratios based on selected difficulty
+        quiz_size = int(form.cleaned_data.get('quiz_size') or 0)
+        selected_difficulty = form.cleaned_data.get('difficulty')
+        selected_counts = {'Easy': 0, 'Medium': 0, 'Hard': 0}
+        if quiz_size > 0 and activities:
+            # Define base ratios according to chosen difficulty
+            if selected_difficulty == 'Easy':
+                ratios = {'Easy': 0.6, 'Medium': 0.3, 'Hard': 0.1}
+            elif selected_difficulty == 'Hard':
+                ratios = {'Easy': 0.1, 'Medium': 0.3, 'Hard': 0.6}
+            else:  # Medium or default
+                ratios = {'Easy': 0.2, 'Medium': 0.6, 'Hard': 0.2}
+
+            # Initial integer allocation
+            base_counts = {k: int(round(quiz_size * v)) for k, v in ratios.items()}
+            # Adjust to ensure sum equals quiz_size
+            total_alloc = sum(base_counts.values())
+            while total_alloc != quiz_size:
+                # Correct rounding drift by adjusting the largest (or smallest) bucket
+                diff = quiz_size - total_alloc
+                # Prefer adjusting the primary difficulty bucket
+                primary = max(base_counts, key=lambda k: ratios[k])
+                base_counts[primary] += 1 if diff > 0 else -1
+                total_alloc = sum(base_counts.values())
+
+            # Query available pools per difficulty
+            available = {}
+            for diff_key in ['Easy', 'Medium', 'Hard']:
+                available[diff_key] = list(
+                    Question.objects
+                    .filter(is_active=True, activities__in=activities, difficulty=diff_key)
+                    .distinct()
+                    .order_by('?')
+                )
+
+            # Take up to allocated, track shortages
+            chosen = []
+            shortages = 0
+            for diff_key, need in base_counts.items():
+                pool = available.get(diff_key, [])
+                take = min(len(pool), need)
+                if take > 0:
+                    chosen.extend(pool[:take])
+                selected_counts[diff_key] = take
+                shortages += max(0, need - take)
+
+            # Redistribute shortages across other pools with remaining items
+            if shortages > 0:
+                # Build a flat list of remaining items across difficulties
+                remaining = []
+                for diff_key, pool in available.items():
+                    already = selected_counts[diff_key]
+                    remaining.extend(pool[already:])
+                # Already randomized by order_by('?'), so just slice
+                if remaining:
+                    extra = remaining[:shortages]
+                    chosen.extend(extra)
+                    # Update counts per difficulty for reporting
+                    for q in extra:
+                        selected_counts[q.difficulty] = selected_counts.get(q.difficulty, 0) + 1
+
+            # Trim in case of overfill (defensive)
+            chosen = chosen[:quiz_size]
+            quiz.questions.set(chosen)
+            # Recompute total points
+            quiz.total_points = sum(int(getattr(q, 'points', 0) or 0) for q in chosen)
+            quiz.save(update_fields=['total_points'])
+        # Optionally assign to a round
+        round_number = request.POST.get('assign_round')
+        if round_number:
+            try:
+                r = ChallengeRound.objects.get(challenge=ch, round_number=int(round_number))
+                r.quiz = quiz
+                r.save(update_fields=['quiz'])
+                # Detailed success message
+                if quiz_size > 0 and activities:
+                    messages.success(
+                        request,
+                        (
+                            f'Quiz "{quiz.name}" created (E:{selected_counts["Easy"]} / '
+                            f'M:{selected_counts["Medium"]} / H:{selected_counts["Hard"]}) '
+                            f'and assigned to round {round_number}.'
+                        )
+                    )
+                else:
+                    messages.success(request, f'Quiz "{quiz.name}" created and assigned to round {round_number}.')
+            except Exception:
+                if quiz_size > 0 and activities:
+                    messages.success(
+                        request,
+                        f'Quiz "{quiz.name}" created (E:{selected_counts["Easy"]} / M:{selected_counts["Medium"]} / H:{selected_counts["Hard"]}).'
+                    )
+                else:
+                    messages.success(request, f'Quiz "{quiz.name}" created.')
+        else:
+            if quiz_size > 0 and activities:
+                messages.success(
+                    request,
+                    f'Quiz "{quiz.name}" created (E:{selected_counts["Easy"]} / M:{selected_counts["Medium"]} / H:{selected_counts["Hard"]}).'
+                )
+            else:
+                messages.success(request, f'Quiz "{quiz.name}" created.')
         return redirect('challenge_detail', pk=pk)
 
 

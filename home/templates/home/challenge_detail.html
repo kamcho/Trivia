@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Challenge · {{ challenge.name|default:('Challenge #'|add:challenge.id) }} · BibleTrivia{% endblock %}
+{% block title %}Challenge · {% if challenge.name %}{{ challenge.name }}{% else %}Challenge #{{ challenge.id }}{% endif %} · BibleTrivia{% endblock %}
 
 {% block content %}
 <section class="py-10">
@@ -10,6 +10,13 @@
       <div>
         <h1 class="text-2xl font-bold text-slate-100">{{ challenge.name|default:"Challenge" }}</h1>
         <p class="text-slate-400 text-sm">Mode: {{ challenge.mode }} · Status: {{ challenge.status }} · Best of: {{ challenge.best_of|default:1 }}</p>
+        {% if scheduled_at_iso %}
+        <div class="mt-2 inline-flex items-center gap-2 rounded-md border border-slate-700/50 bg-slate-800/50 px-3 py-1.5 text-slate-300">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V5m8 2V5M3 9h18M5 9v10a2 2 0 002 2h10a2 2 0 002-2V9"/></svg>
+          <span>Starts in</span>
+          <span id="countdown" class="font-semibold text-slate-100">--:--:--</span>
+        </div>
+        {% endif %}
       </div>
       <a href="javascript:history.back()" class="text-slate-400 hover:text-slate-200 text-sm">← Back</a>
     </div>
@@ -43,6 +50,7 @@
 
         <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-slate-100 mb-4">Standings</h2>
+          {% if has_any_attempts or has_standings_results %}
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead class="text-slate-300 border-b border-slate-700/50">
@@ -58,63 +66,114 @@
                   <td class="py-2 pr-4">
                     {% if row.participant.user %}
                       {{ row.participant.user.get_full_name|default:row.participant.user.username }}
-                    {% else %}
+                    {% elif row.participant.group %}
                       {{ row.participant.group.name }}
+                    {% else %}
+                      —
                     {% endif %}
                   </td>
-                  <td class="py-2 px-4 text-right">{{ row.total_score }}</td>
-                  <td class="py-2 px-4 text-right">{{ row.total_time }}</td>
+                  <td class="py-2 px-4 text-right">{{ row.total_score|default:"-" }}</td>
+                  <td class="py-2 px-4 text-right">{{ row.total_time|default:"-" }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
+          {% else %}
+          <div class="py-8 flex flex-col items-center justify-center text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-12 h-12 mb-3 text-slate-500">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h.01M15 12h.01M4.5 12a7.5 7.5 0 1015 0 7.5 7.5 0 00-15 0z" />
+            </svg>
+            <p class="text-sm">Data not available yet — no participants have joined.</p>
+          </div>
+          {% endif %}
         </div>
 
         <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-slate-100 mb-4">Per-round Winners</h2>
+          {% if has_round_results %}
           <div class="space-y-3">
             {% for rr in round_results %}
               <div>
                 <div class="text-slate-300 text-sm">Round {{ rr.round.round_number }} · Best Score: {{ rr.best_score|default:0 }}</div>
                 <div class="text-slate-400 text-sm">Winners:
-                  {% for p in rr.winners %}
-                    {% if p.user %}{{ p.user.get_full_name|default:p.user.username }}{% else %}{{ p.group.name }}{% endif %}{% if not forloop.last %}, {% endif %}
-                  {% empty %}
-                    None
-                  {% endfor %}
+                  {% if rr.best_score|default:0 > 0 %}
+                    {% for p in rr.winners %}
+                      {% if p.user %}{{ p.user.get_full_name|default:p.user.username }}{% else %}{{ p.group.name }}{% endif %}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 italic">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-4 h-4 text-slate-400"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        No participation yet.
+                      </span>
+                    {% endfor %}
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 italic">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-4 h-4 text-slate-400"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      No participation yet.
+                    </span>
+                  {% endif %}
                 </div>
               </div>
             {% endfor %}
           </div>
+          {% else %}
+          <div class="py-6 flex flex-col items-center justify-center text-slate-400">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-10 h-10 mb-2 text-slate-500">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-3 0-5.5 2.5-5.5 5.5S9 19 12 19s5.5-2.5 5.5-5.5S15 8 12 8z" />
+            </svg>
+            <p class="text-sm">Data not available — rounds or winners not yet set.</p>
+          </div>
+          {% endif %}
         </div>
       </div>
 
       <div class="space-y-6">
         <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-slate-100 mb-4">Participants</h2>
-          <ul class="space-y-2">
-            {% for p in participants %}
-              <li class="flex items-center justify-between">
-                <div class="text-slate-200">
-                  {% if p.user %}
-                    {{ p.user.get_full_name|default:p.user.username }}
-                  {% else %}
-                    {{ p.group.name }}
-                  {% endif %}
-                </div>
-                <div>
-                  {% if p.is_active %}
-                    <span class="text-emerald-300 text-xs">Accepted</span>
-                  {% else %}
-                    <span class="text-slate-400 text-xs">Pending</span>
-                  {% endif %}
-                </div>
-              </li>
-            {% endfor %}
-          </ul>
+          {% if any_participant_joined %}
+            <ul class="space-y-2">
+              {% for p in participants %}
+                {% if p.user or p.group %}
+                <li class="flex items-center justify-between">
+                  <div class="text-slate-200">
+                    {% with u=p.user g=p.group %}
+                      {% if u %}
+                        {% firstof u.get_full_name u.username "-" %}
+                      {% elif g %}
+                        {% firstof g.name "-" %}
+                      {% else %}
+                        -
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+                  <div class="flex items-center gap-2">
+                    {% if p.is_active %}
+                      <span class="text-emerald-300 text-xs">Accepted</span>
+                    {% else %}
+                      <span class="text-slate-400 text-xs">Pending</span>
+                      {% if user == challenge.created_by %}
+                        <form method="post" action="{% url 'challenge_participant_approve' challenge.pk %}">
+                          {% csrf_token %}
+                          <input type="hidden" name="participant_id" value="{{ p.id }}" />
+                          <button type="submit" class="text-xs px-2 py-1 rounded-md bg-emerald-700 hover:bg-emerald-600 text-white">Approve</button>
+                        </form>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="py-6 flex flex-col items-center justify-center text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-10 h-10 mb-2 text-slate-500">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v.01M12 12v.01M12 18v.01" />
+              </svg>
+              <p class="text-sm">No participants have joined yet.</p>
+            </div>
+          {% endif %}
           <div class="mt-4 space-x-2">
-            {% if challenge.mode == 'individual' and user.is_authenticated %}
+            {% if user == challenge.created_by %}
               <form method="post" action="{% url 'challenge_accept' challenge.pk %}" class="inline">
                 {% csrf_token %}
                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-md text-sm">Accept</button>
@@ -123,9 +182,73 @@
                 {% csrf_token %}
                 <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded-md text-sm">Decline</button>
               </form>
+            {% elif can_join_individual %}
+              <form method="post" action="{% url 'challenge_accept' challenge.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-md text-sm">Join Challenge</button>
+              </form>
+            {% elif challenge.mode == 'individual' and not user.is_authenticated and not is_creator %}
+              <a href="{% url 'login' %}?next={% url 'challenge_detail' challenge.pk %}" class="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-md text-sm">Log in to join</a>
             {% endif %}
           </div>
         </div>
+
+        {% if user == challenge.created_by %}
+        <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-slate-100 mb-4">Create Quiz</h2>
+          <form method="post" action="{% url 'challenge_quick_quiz_create' challenge.pk %}" class="space-y-3">
+            {% csrf_token %}
+            <div class="space-y-2">
+              <label class="block text-sm text-slate-300">Name</label>
+              {{ quiz_form.name }}
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm text-slate-300">Description</label>
+              {{ quiz_form.description }}
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-slate-300">Difficulty</label>
+                {{ quiz_form.difficulty }}
+              </div>
+              {{ quiz_form.quiz_type }}
+            </div>
+            {{ quiz_form.participation }}
+            <div>
+              <label class="block text-sm text-slate-300">Level</label>
+              {{ quiz_form.level }}
+            </div>
+            <div>
+              <label class="block text-sm text-slate-300">Activities</label>
+              {{ quiz_form.activities }}
+              {% if quiz_form.activities.help_text %}
+                <p class="text-xs text-slate-400 mt-1">{{ quiz_form.activities.help_text }}</p>
+              {% endif %}
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-slate-300">Quiz Size</label>
+                {{ quiz_form.quiz_size }}
+                {% if quiz_form.quiz_size.help_text %}
+                  <p class="text-xs text-slate-400 mt-1">{{ quiz_form.quiz_size.help_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm text-slate-300">Assign to Round (optional)</label>
+              <select name="assign_round" class="w-full rounded-md bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200">
+                <option value="">-- none --</option>
+                {% for r in rounds %}
+                <option value="{{ r.round_number }}">Round {{ r.round_number }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-md">Create Quiz</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
 
         <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
           <h2 class="text-lg font-semibold text-slate-100 mb-4">Notes</h2>
@@ -135,4 +258,32 @@
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{% if scheduled_at_iso %}
+<script>
+(function(){
+  const el = document.getElementById('countdown');
+  if(!el) return;
+  const target = new Date('{{ scheduled_at_iso }}').getTime();
+  const tick = function(){
+    const now = Date.now();
+    let diff = Math.max(0, target - now);
+    const days = Math.floor(diff / (1000*60*60*24)); diff -= days*(1000*60*60*24);
+    const hrs = Math.floor(diff / (1000*60*60)); diff -= hrs*(1000*60*60);
+    const mins = Math.floor(diff / (1000*60)); diff -= mins*(1000*60);
+    const secs = Math.floor(diff / 1000);
+    const pad = (n)=>String(n).padStart(2,'0');
+    el.textContent = (days>0? days+"d ":"") + pad(hrs)+":"+pad(mins)+":"+pad(secs);
+    if(target - now <= 0){
+      el.textContent = 'Starting now';
+      clearInterval(timer);
+    }
+  };
+  tick();
+  const timer = setInterval(tick, 1000);
+})();
+</script>
+{% endif %}
 {% endblock %}

@@ -4,7 +4,6 @@ from .models import (
     ActivityCategory, CompetitionActivity, Competition, Cohort, TestQuiz,
     ActivityInstruction, ActivityRule, CompetitionRegistrationWindow, CompetitionScheduleItem
 )
-from users.models import MyUser
 from .models import Challenge
 
 
@@ -32,20 +31,55 @@ class ChurchForm(forms.ModelForm):
         }
 
 
-class ChallengeCreateForm(forms.ModelForm):
-    participants_users = forms.ModelMultipleChoiceField(
+class QuickQuizCreateForm(forms.ModelForm):
+    """A minimal quiz creation form for inline use on challenge pages."""
+    # Extra controls for challenge quick create
+    activities = forms.ModelMultipleChoiceField(
+        queryset=CompetitionActivity.objects.filter(is_active=True).order_by('name'),
         required=False,
-        queryset=MyUser.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'size': 8}),
-        label='User Participants'
+        widget=forms.SelectMultiple(attrs={
+            'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
+            'size': 6
+        }),
+        help_text='Select one or more activities to pull questions from'
     )
-    participants_groups = forms.ModelMultipleChoiceField(
+    quiz_size = forms.IntegerField(
         required=False,
-        queryset=TriviaGroup.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'size': 8}),
-        label='Group Participants'
+        min_value=1,
+        max_value=100,
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
+            'placeholder': 'Number of questions (e.g., 10)'
+        }),
+        help_text='How many questions to include (randomly selected)'
     )
+    class Meta:
+        model = TestQuiz
+        fields = ['name', 'description', 'difficulty', 'quiz_type', 'participation', 'level', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Quiz name'}),
+            'description': forms.Textarea(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'rows': 2, 'placeholder': 'Short description'}),
+            'difficulty': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
+            'quiz_type': forms.HiddenInput(),
+            'participation': forms.HiddenInput(),
+            'level': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'}),
+        }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hardcode quiz type to Competition in the form UI
+        self.fields['quiz_type'].initial = 'Competition'
+
+    def clean(self):
+        cleaned = super().clean()
+        activities = cleaned.get('activities')
+        if not activities or activities.count() == 0:
+            self.add_error('activities', 'Select at least one activity.')
+        return cleaned
+
+
+class ChallengeCreateForm(forms.ModelForm):
     class Meta:
         model = Challenge
         fields = ['name', 'description', 'mode', 'best_of', 'max_participants', 'scheduled_at', 'expires_at']
@@ -58,28 +92,6 @@ class ChallengeCreateForm(forms.ModelForm):
             'scheduled_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
             'expires_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
         }
-
-    def clean(self):
-        cleaned = super().clean()
-        mode = cleaned.get('mode')
-        max_participants = cleaned.get('max_participants') or 0
-        users = self.cleaned_data.get('participants_users') or MyUser.objects.none()
-        groups = self.cleaned_data.get('participants_groups') or TriviaGroup.objects.none()
-        if mode == 'individual':
-            if groups.exists():
-                self.add_error('participants_groups', 'Do not select groups in individual mode.')
-            if users.count() < 1:
-                self.add_error('participants_users', 'Select at least one user to invite.')
-            if users.count() + 1 > max_participants:  # +1 for creator
-                self.add_error('participants_users', f'Total participants would exceed max_participants ({max_participants}).')
-        elif mode == 'group':
-            if users.exists():
-                self.add_error('participants_users', 'Do not select users in group mode.')
-            if groups.count() < 1:
-                self.add_error('participants_groups', 'Select at least one group to invite.')
-            if groups.count() + 1 > max_participants:
-                self.add_error('participants_groups', f'Total participants would exceed max_participants ({max_participants}).')
-        return cleaned
 
 
 class ChoiceForm(forms.ModelForm):

@@ -53,22 +53,7 @@
         </div>
       </div>
 
-      <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 space-y-4">
-        <h2 class="text-lg font-semibold text-slate-100">Participants</h2>
-        <p class="text-slate-400 text-sm">Select either users (for individual mode) or groups (for group mode). The creator is automatically included.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm text-slate-300 mb-1">Users</label>
-            {{ form.participants_users }}
-            {% if form.participants_users.errors %}<p class="text-rose-400 text-sm mt-1">{{ form.participants_users.errors|join:", " }}</p>{% endif %}
-          </div>
-          <div>
-            <label class="block text-sm text-slate-300 mb-1">Groups</label>
-            {{ form.participants_groups }}
-            {% if form.participants_groups.errors %}<p class="text-rose-400 text-sm mt-1">{{ form.participants_groups.errors|join:", " }}</p>{% endif %}
-          </div>
-        </div>
-      </div>
+      <!-- Participants selection deferred -->
 
       <div class="flex items-center justify-between">
         <a href="javascript:history.back()" class="text-slate-400 hover:text-slate-200 text-sm">Cancel</a>

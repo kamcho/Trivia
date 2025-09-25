@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.text import slugify
 from django.conf import settings
@@ -1284,14 +1285,14 @@ class Challenge(TimeStampedModel):
 
     def clean(self):
         if self.expires_at and self.scheduled_at and self.expires_at < self.scheduled_at:
-            raise models.ValidationError('expires_at must be after scheduled_at')
+            raise ValidationError('expires_at must be after scheduled_at')
         if self.best_of is not None:
             if self.best_of <= 0:
-                raise models.ValidationError('best_of must be a positive integer')
+                raise ValidationError('best_of must be a positive integer')
             if self.best_of % 2 == 0:
-                raise models.ValidationError('best_of should be an odd number to ensure a clear majority')
+                raise ValidationError('best_of should be an odd number to ensure a clear majority')
         if self.max_participants is None or self.max_participants < 2:
-            raise models.ValidationError('max_participants must be at least 2')
+            raise ValidationError('max_participants must be at least 2')
 
 
 class ChallengeParticipant(TimeStampedModel):
@@ -1323,12 +1324,12 @@ class ChallengeParticipant(TimeStampedModel):
 
     def clean(self):
         if bool(self.user) == bool(self.group):
-            raise models.ValidationError('Exactly one of user or group must be set for a participant.')
+            raise ValidationError('Exactly one of user or group must be set for a participant.')
         if self.challenge_id:
             if self.challenge.mode == 'individual' and not self.user:
-                raise models.ValidationError('Challenge in individual mode requires user participants.')
+                raise ValidationError('Challenge in individual mode requires user participants.')
             if self.challenge.mode == 'group' and not self.group:
-                raise models.ValidationError('Challenge in group mode requires group participants.')
+                raise ValidationError('Challenge in group mode requires group participants.')
 
 
 class ChallengeRound(TimeStampedModel):

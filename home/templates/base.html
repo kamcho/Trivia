@@ -38,7 +38,7 @@
                         </div>
 
                 <!-- Challenges Link -->
-                <a class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md" href="{% url 'challenge_create' %}">Challenges</a>
+                <a class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md" href="{% url 'challenge_list' %}">Challenges</a>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@
                 </div>
 
                 <!-- Challenges -->
-                <a class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md" href="{% url 'challenge_create' %}">Challenges</a>
+                <a class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded-md" href="{% url 'challenge_list' %}">Challenges</a>
 
                 <!-- Play Dropdown -->
                 <div class="relative group">
@@ -159,7 +159,7 @@
                 <a href="{% url 'question_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Questions</a>
                 <a href="{% url 'quiz_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Quizzes</a>
                 <a href="{% url 'competition_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Competitions</a>
-                <a href="{% url 'challenge_create' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Challenges</a>
+                <a href="{% url 'challenge_list' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Challenges</a>
                 <a href="{% url 'group-create' %}" class="block px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-md">Groups</a>
                 {% if user.is_authenticated %}
                     <div class="border-t border-slate-700 my-2"></div>
