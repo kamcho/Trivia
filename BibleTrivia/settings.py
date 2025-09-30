@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-p20=sts_20e#2h#x(t(q%x&7#)3@mi&4d*xz+i(m+y1p++u+hd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['bibletrivia.pythonanywhere.com','*']
 
 
 # Application definition
