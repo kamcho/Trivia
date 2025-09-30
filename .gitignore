@@ -46,3 +46,24 @@ Thumbs.db
 # Migrations: do not track any migrations
 **/migrations/
 **/migrations/**
+
+# Images and videos
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.bmp
+*.tif
+*.tiff
+*.ico
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.flv
+*.wmv
+*.m4v
+*.3gp
