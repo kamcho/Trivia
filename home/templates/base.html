@@ -9,7 +9,9 @@
         .brand-badge { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 8px; font-weight: 800; }
         .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s ease, transform .6s ease; }
         .reveal.in { opacity: 1; transform: translateY(0); }
+        html:not(.js) .reveal { opacity: 1; transform: none; }
     </style>
+    <script>document.documentElement.classList.add('js');</script>
     {% block extra_head %}{% endblock %}
     {% load static %}
     {% load user_extras %}

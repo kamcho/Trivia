@@ -67,3 +67,9 @@ Thumbs.db
 *.wmv
 *.m4v
 *.3gp
+
+# Allow compiled CSS in static/css
+!static/
+static/**
+!static/css/
+!static/css/*.css
