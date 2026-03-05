@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add New School | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-20 px-4 min-h-[calc(100vh-200px)] flex items-center justify-center">
+    <div
+        class="w-full max-w-3xl bg-white p-8 md:p-12 rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-200/50 animate-in fade-in zoom-in duration-500">
+        <div class="text-center mb-10">
+            <h2 class="font-outfit text-3xl md:text-4xl font-extrabold text-dark mb-2 tracking-tight">Onboard
+                Institution</h2>
+            <p class="text-slate-500 font-medium">Enter the official details to register a new school.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="space-y-2">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-secondary opacity-50 ml-1 font-black">*</span>{% endif %}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+                <p class="text-[11px] text-slate-400 font-medium tracking-wide uppercase">{{ field.help_text }}</p>
+                {% endif %}
+
+                {% if field.errors %}
+                <ul class="bg-secondary/5 border-l-4 border-secondary p-3 mt-1 rounded-r-lg">
+                    {% for error in field.errors %}
+                    <li class="text-secondary text-sm font-bold flex items-center gap-2">
+                        <i data-lucide="alert-circle" size="14"></i>
+                        {{ error }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-4 space-y-4">
+                <button type="submit" class="w-full btn btn-primary justify-center py-4 text-base">
+                    Complete Onboarding
+                    <i data-lucide="check-circle" size="20"></i>
+                </button>
+
+                <a href="{% url 'core:school_list' %}"
+                    class="block text-center text-sm font-bold text-slate-400 hover:text-dark transition-colors tracking-wide uppercase">
+                    Discard and Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Add Tailwind classes to Django form inputs dynamically
+    document.querySelectorAll('input:not([type="checkbox"]):not([type="file"]), select, textarea').forEach(el => {
+        el.classList.add('form-input');
+    });
+    document.querySelectorAll('input[type="file"]').forEach(el => {
+        el.classList.add('w-full', 'text-sm', 'text-slate-500', 'file:mr-4', 'file:py-2', 'file:px-4', 'file:rounded-lg', 'file:border-0', 'file:text-sm', 'file:font-bold', 'file:bg-primary/10', 'file:text-primary', 'hover:file:bg-primary/20', 'cursor-pointer');
+    });
+</script>
+{% endblock %}

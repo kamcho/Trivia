@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ test.name }} | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-20 px-[5%] lg:px-[10%] bg-surface/30 min-h-[calc(100vh-200px)]">
+    <div class="max-w-4xl mx-auto space-y-10">
+        <!-- Breadcrumb -->
+        <a href="{% url 'home:tests_list' %}"
+            class="inline-flex items-center gap-2 text-slate-400 font-bold uppercase tracking-widest text-xs hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" size="14"></i>
+            Back to Challenges
+        </a>
+
+        <!-- Main Challenge Card -->
+        <div
+            class="bg-white rounded-[3rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden relative">
+            <div class="h-4 bg-gradient-to-r 
+                {% if test.difficulty == 'easy' %} from-primary to-green-300
+                {% elif test.difficulty == 'medium' %} from-accent to-yellow-200
+                {% else %} from-secondary to-orange-400 {% endif %}">
+            </div>
+
+            <div class="p-8 md:p-16 text-center space-y-8 relative">
+                <i data-lucide="brain"
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-50/50 -z-10"
+                    size="300"></i>
+
+                <div class="space-y-4">
+                    <span class="px-6 py-2 rounded-full font-black text-xs uppercase tracking-[3px]
+                        {% if test.difficulty == 'easy' %} bg-primary/10 text-primary
+                        {% elif test.difficulty == 'medium' %} bg-accent/10 text-accent
+                        {% else %} bg-secondary/10 text-secondary {% endif %}">
+                        {{ test.get_difficulty_display }} Challenge
+                    </span>
+                    <h1 class="font-outfit text-4xl md:text-6xl font-extrabold text-dark tracking-tighter capitalize">{{ test.name }}</h1>
+                    <p class="text-slate-500 font-medium text-lg max-w-xl mx-auto">Prepare your intellect. This
+                        challenge will test your speed and accuracy across multiple domains.</p>
+                </div>
+
+                <!-- Stats Hub -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-8 py-10 border-y border-slate-50">
+                    <div class="space-y-1">
+                        <div class="text-xs font-black text-slate-300 uppercase tracking-widest">Duration</div>
+                        <div class="text-2xl font-black text-dark font-outfit">{{ test.time }} <span
+                                class="text-slate-300 text-sm">MINS</span></div>
+                    </div>
+                    <div class="space-y-1 border-x border-slate-50">
+                        <div class="text-xs font-black text-slate-300 uppercase tracking-widest">Questions</div>
+                        <div class="text-2xl font-black text-dark font-outfit">{{ test.questions.count }} <span
+                                class="text-slate-300 text-sm">ITEMS</span></div>
+                    </div>
+                    <div class="space-y-1 col-span-2 md:col-span-1">
+                        <div class="text-xs font-black text-slate-300 uppercase tracking-widest">Total Value</div>
+                        <div class="text-2xl font-black text-dark font-outfit">100 <span
+                                class="text-slate-300 text-sm">POINTS</span></div>
+                    </div>
+                </div>
+
+                <div class="text-left bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                    <h4 class="font-outfit text-xl font-bold text-dark mb-4 flex items-center gap-2">
+                        <i data-lucide="align-left" size="20" class="text-primary"></i>
+                        Challenge Briefing
+                    </h4>
+                    <p class="text-slate-600 font-medium leading-relaxed">{{ test.description }}</p>
+                </div>
+
+                <div class="pt-6">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'home:take_test' test.id %}"
+                        class="btn btn-primary justify-center w-full py-6 text-2xl rounded-2xl shadow-2xl shadow-primary/30 animate-pulse">
+                        Begin Challenge Now
+                        <i data-lucide="play-circle" size="32" class="fill-current"></i>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'users:login' %}?next={{ request.path }}"
+                        class="btn btn-outline justify-center w-full py-6 text-xl rounded-2xl border-slate-200 hover:border-primary hover:bg-primary/5">
+                        Please Login to Participate
+                        <i data-lucide="log-in" size="24"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-4">Guidelines & Rules</p>
+            <div class="flex flex-wrap justify-center gap-6 text-xs font-bold text-slate-400">
+                <span class="flex items-center gap-2"><i data-lucide="check-circle-2" size="14"></i> No external aids
+                    allowed</span>
+                <span class="flex items-center gap-2"><i data-lucide="check-circle-2" size="14"></i> Timer starts
+                    immediately</span>
+                <span class="flex items-center gap-2"><i data-lucide="check-circle-2" size="14"></i> Single attempt per
+                    session</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

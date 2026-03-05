@@ -1,229 +1,142 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Questions - Bible Trivia{% endblock %}
+{% block title %}Question Bank | Kenya School Trivia League{% endblock %}
 
 {% block content %}
-<div class="min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-                <h1 class="text-4xl font-bold text-white mb-2">Trivia Questions</h1>
-                <p class="text-slate-300">Browse and manage Bible trivia questions</p>
+<div class="py-12 px-[5%] lg:px-[10%] bg-surface/30 min-h-[calc(100vh-200px)]">
+    <div class="max-w-6xl mx-auto space-y-10">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="space-y-2">
+                <nav class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
+                    <a href="{% url 'home:index' %}" class="hover:text-primary transition-colors">Home</a>
+                    <i data-lucide="chevron-right" size="14"></i>
+                    <span class="text-slate-600">Question Bank</span>
+                </nav>
+                <h1 class="font-outfit text-4xl font-extrabold text-dark tracking-tight">Question Bank</h1>
+                <p class="text-slate-500 font-medium italic">Comprehensive repository of all intellectual challenges.
+                </p>
             </div>
-            {% if user.is_authenticated %}
-            <a href="{% url 'question_create' %}" 
-               class="mt-4 md:mt-0 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
-                <i class="fas fa-plus mr-2"></i>Add Question
-            </a>
+
+            {% if user.is_superuser %}
+            <div class="flex gap-4">
+                <a href="{% url 'home:question_add' %}"
+                    class="btn btn-primary h-12 px-6 rounded-xl shadow-lg shadow-primary/20">
+                    <i data-lucide="plus" size="18"></i>
+                    Create Question
+                </a>
+            </div>
             {% endif %}
         </div>
 
-        <!-- Search and Filters -->
-        <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 border border-slate-700/50">
-            <form method="get" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Search -->
-                    <div class="lg:col-span-2">
-                        <input type="text" 
-                               name="search" 
-                               value="{{ search_query }}"
-                               placeholder="Search questions..." 
-                               class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-4 py-3 text-slate-200 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20">
-                    </div>
-                    
-                    <!-- Category Filter -->
-                    <div>
-                        <select name="category" class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-4 py-3 text-slate-200">
-                            <option value="">All Categories</option>
-                            {% for category in categories %}
-                            <option value="{{ category.slug }}" {% if category_filter == category.slug %}selected{% endif %}>
-                                {{ category.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Difficulty Filter -->
-                    <div>
-                        <select name="difficulty" class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-4 py-3 text-slate-200">
-                            <option value="">All Difficulties</option>
-                            {% for value, label in difficulties %}
-                            <option value="{{ value }}" {% if difficulty_filter == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Level Filter -->
-                    <div>
-                        <select name="level" class="w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-4 py-3 text-slate-200">
-                            <option value="">All Levels</option>
-                            {% for value, label in levels %}
-                            <option value="{{ value }}" {% if level_filter == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="md:col-span-2 flex gap-2">
-                        <button type="submit" 
-                                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                            <i class="fas fa-search mr-2"></i>Search
-                        </button>
-                        {% if search_query or category_filter or difficulty_filter or level_filter %}
-                        <a href="{% url 'question_list' %}" 
-                           class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                            Clear
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Results Summary -->
-        <div class="mb-6">
-            <p class="text-slate-300">
-                {% if search_query or category_filter or difficulty_filter or level_filter %}
-                    Found {{ total_questions }} question{{ total_questions|pluralize }} matching your criteria
-                {% else %}
-                    {{ total_questions }} question{{ total_questions|pluralize }} total
-                {% endif %}
-            </p>
-        </div>
-
-        <!-- Questions List -->
-        {% if questions %}
-        <div class="space-y-6 mb-8">
+        <!-- Question List -->
+        <div class="grid grid-cols-1 gap-8">
             {% for question in questions %}
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-indigo-500/50 transition-all duration-200">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex-1 mr-4">
-                        <h3 class="text-xl font-semibold text-white mb-2">
-                            <a href="{% url 'question_detail' question.pk %}" class="hover:text-indigo-400 transition-colors">
-                                {{ question.question_text }}
-                            </a>
-                        </h3>
-                        
-                        <div class="flex flex-wrap gap-2 mb-3">
-                            {% for cat in question.categories.all %}
-                            <span class="px-3 py-1 rounded-full bg-indigo-600/20 text-indigo-300 text-sm">
-                                {{ cat.name }}
-                            </span>
-                            {% endfor %}
-                            <span class="px-3 py-1 rounded-full bg-purple-600/20 text-purple-300 text-sm">
-                                {{ question.difficulty }}
-                            </span>
-                            <span class="px-3 py-1 rounded-full bg-green-600/20 text-green-300 text-sm">
-                                {{ question.level }}
-                            </span>
-                            <span class="px-3 py-1 rounded-full bg-yellow-600/20 text-yellow-300 text-sm">
-                                {{ question.points }} point{{ question.points|pluralize }}
-                            </span>
+            <div
+                class="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-300/30 overflow-hidden group hover:border-primary/30 transition-all duration-300">
+                <div class="p-8 md:p-10">
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Type Info -->
+                        <div class="md:w-1/4 space-y-4">
+                            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border
+                                {% if question.question_type == 'multiple choice' %} border-primary/20 bg-primary/5 text-primary
+                                {% else %} border-secondary/20 bg-secondary/5 text-secondary {% endif %}">
+                                <i data-lucide="{% if question.question_type == 'multiple choice' %}list-checks{% else %}keyboard{% endif %}"
+                                    size="14"></i>
+                                {{ question.get_question_type_display }}
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Points
+                                    Value</div>
+                                <div class="text-3xl font-black text-dark font-outfit">{{ question.score }} <span
+                                        class="text-sm font-black text-slate-300 uppercase">XP</span></div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Time Limit
+                                </div>
+                                <div class="flex items-center gap-2 text-slate-500 font-bold">
+                                    <i data-lucide="timer" size="16"></i>
+                                    {{ question.time }} Seconds
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="flex items-center space-x-4 text-sm text-slate-400">
-                            {% if question.bible_reference %}
-                            <span><i class="fas fa-book mr-1"></i>{{ question.bible_reference }}</span>
+
+                        <!-- Content Area -->
+                        <div class="md:w-3/4 space-y-6">
+                            <div>
+                                <h3 class="font-outfit text-2xl font-bold text-dark leading-snug">{{
+                                    question.question_text }}</h3>
+                                {% if question.metadata.answer %}
+                                <div class="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 italic">
+                                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Correct
+                                        Answer</span>
+                                    <span class="text-slate-600 font-bold">{{ question.metadata.answer }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {% if question.question_type == 'multiple choice' %}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {% for option in question.questionoption_set.all %}
+                                <div
+                                    class="flex items-center justify-between p-4 rounded-2xl border transition-all
+                                    {% if option.is_correct %} border-primary/20 bg-primary/5 shadow-inner {% else %} border-slate-100 bg-slate-50/50 {% endif %}">
+                                    <span
+                                        class="text-sm font-bold {% if option.is_correct %} text-primary {% else %} text-slate-500 {% endif %}">{{
+                                        option.option_text }}</span>
+                                    {% if option.is_correct %}
+                                    <i data-lucide="check-circle-2" size="16" class="text-primary"></i>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
                             {% endif %}
-                            <span><i class="fas fa-user mr-1"></i>{{ question.created_by.get_full_name|default:question.created_by.email }}</span>
-                            <span><i class="fas fa-calendar mr-1"></i>{{ question.created_at|date:"M d, Y" }}</span>
                         </div>
                     </div>
-                    
-                    <div class="flex space-x-2">
-                        {% if user.is_authenticated and question.created_by == user or user.is_staff %}
-                        <a href="{% url 'question_update' question.pk %}" 
-                           class="text-slate-400 hover:text-indigo-400 transition-colors p-2" 
-                           title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        {% endif %}
-                        <a href="{% url 'question_detail' question.pk %}" 
-                           class="text-slate-400 hover:text-purple-400 transition-colors p-2" 
-                           title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </a>
+                </div>
+
+                <!-- Footer Info -->
+                <div class="px-10 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <div
+                            class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <i data-lucide="calendar" size="12"></i>
+                            Added {{ question.created_at|date:"M d, Y" }}
+                        </div>
+                        <div
+                            class="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <i data-lucide="layers" size="12"></i>
+                            Used in {{ question.tests_set.count }} Tests
+                        </div>
                     </div>
+                    {% if user.is_superuser %}
+                    <div class="flex items-center gap-4">
+                        <a href="#"
+                            class="text-[10px] font-black text-slate-300 hover:text-primary transition-colors uppercase tracking-widest">Edit
+                            Question</a>
+                    </div>
+                    {% endif %}
                 </div>
-                
-                {% if question.explanation %}
-                <div class="bg-slate-700/30 rounded-lg p-3 mt-3">
-                    <p class="text-slate-300 text-sm">
-                        <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
-                        {{ question.explanation|truncatechars:150 }}
-                    </p>
-                </div>
+            </div>
+            {% empty %}
+            <div
+                class="py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center px-8">
+                <i data-lucide="help-circle" size="64" class="mb-6 opacity-20"></i>
+                <h2 class="text-2xl font-outfit font-extrabold text-dark tracking-tight mb-2">Empty Question Bank</h2>
+                <p class="font-medium max-w-md mx-auto mb-10">The repository is currently empty. Start by creating the
+                    first intellectual challenge.</p>
+                {% if user.is_superuser %}
+                <a href="{% url 'home:question_add' %}" class="btn btn-primary px-10 py-4">
+                    <i data-lucide="plus" size="20"></i>
+                    Create First Question
+                </a>
                 {% endif %}
             </div>
             {% endfor %}
         </div>
-
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <div class="flex justify-center">
-            <nav class="flex space-x-2">
-                {% if page_obj.has_previous %}
-                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if difficulty_filter %}&difficulty={{ difficulty_filter }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}" 
-                   class="px-3 py-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">
-                    First
-                </a>
-                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if difficulty_filter %}&difficulty={{ difficulty_filter }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}" 
-                   class="px-3 py-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">
-                    Previous
-                </a>
-                {% endif %}
-                
-                <span class="px-3 py-2 rounded-lg bg-indigo-600 text-white">
-                    {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                </span>
-                
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if difficulty_filter %}&difficulty={{ difficulty_filter }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}" 
-                   class="px-3 py-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">
-                    Next
-                </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if difficulty_filter %}&difficulty={{ difficulty_filter }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}" 
-                   class="px-3 py-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">
-                    Last
-                </a>
-                {% endif %}
-            </nav>
-        </div>
-        {% endif %}
-
-        {% else %}
-        <!-- Empty State -->
-        <div class="text-center py-16">
-            <div class="bg-slate-800/50 backdrop-blur-sm rounded-xl p-12 border border-slate-700/50 max-w-md mx-auto">
-                <i class="fas fa-question-circle text-6xl text-slate-600 mb-6"></i>
-                {% if search_query or category_filter or difficulty_filter or level_filter %}
-                <h3 class="text-xl font-semibold text-white mb-4">No questions found</h3>
-                <p class="text-slate-300 mb-6">No questions match your search criteria.</p>
-                <a href="{% url 'question_list' %}" 
-                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                    View All Questions
-                </a>
-                {% else %}
-                <h3 class="text-xl font-semibold text-white mb-4">No questions yet</h3>
-                <p class="text-slate-300 mb-6">Get started by creating your first trivia question.</p>
-                {% if user.is_authenticated %}
-                <a href="{% url 'question_create' %}" 
-                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                    <i class="fas fa-plus mr-2"></i>Create Question
-                </a>
-                {% endif %}
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

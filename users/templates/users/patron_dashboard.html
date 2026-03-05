@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patron Dashboard | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-12 px-[5%] lg:px-[10%] bg-surface/30 min-h-[calc(100vh-200px)]">
+    <div class="max-w-7xl mx-auto space-y-10">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="space-y-2">
+                <h1 class="font-outfit text-4xl font-extrabold text-dark tracking-tight">Patron Portal</h1>
+                <p class="text-slate-500 font-medium italic">Welcome back, {{ user.email }}</p>
+            </div>
+            <div class="flex gap-4">
+                <div
+                    class="bg-white px-6 py-4 rounded-2xl shadow-xl shadow-slate-300/30 border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <i data-lucide="award" size="24"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">National Rank</div>
+                        <div class="font-outfit text-2xl font-black text-dark">#{{ school_rank }}</div>
+                    </div>
+                </div>
+                <div
+                    class="bg-white px-6 py-4 rounded-2xl shadow-xl shadow-slate-300/30 border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+                        <i data-lucide="zap" size="24"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">School Points</div>
+                        <div class="font-outfit text-2xl font-black text-dark">{{ school_points }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if school %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <!-- School Info Card -->
+            <div class="lg:col-span-1 space-y-8">
+                <div
+                    class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-300/30 relative overflow-hidden">
+                    <div class="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+
+                    <div class="relative z-10 space-y-6 text-center">
+                        <div
+                            class="w-24 h-24 mx-auto rounded-3xl bg-slate-50 flex items-center justify-center shadow-inner overflow-hidden border border-slate-100">
+                            {% if school.logo %}
+                            <img src="{{ school.logo.url }}" alt="{{ school.name }}"
+                                class="w-full h-full object-contain">
+                            {% else %}
+                            <i data-lucide="school" size="48" class="text-primary/20"></i>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <h2 class="font-outfit text-2xl font-bold text-dark capitalize">{{ school.name }}</h2>
+                            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">{{ school.city  }}, {{ school.country }}</p>
+                        </div>
+
+                        <div class="pt-6 border-t border-slate-50 text-left space-y-4">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="mail" size="16" class="text-slate-300"></i>
+                                <span class="text-sm font-medium text-slate-600">{{ school.email }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="phone" size="16" class="text-slate-300"></i>
+                                <span class="text-sm font-medium text-slate-600">{{ school.phone }}</span>
+                            </div>
+                            {% if school.website %}
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="globe" size="16" class="text-slate-300"></i>
+                                <a href="{{ school.website }}" target="_blank"
+                                    class="text-sm font-bold text-primary hover:underline">{{ school.website|truncatechars:25 }}</a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <a href="{% url 'core:school_detail' school.pk %}"
+                            class="btn btn-outline w-full justify-center py-4 border-slate-100">
+                            View Public Profile
+                            <i data-lucide="external-link" size="16"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-2 gap-6 text-center">
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl shadow-slate-300/30">
+                        <div class="text-3xl font-black text-dark font-outfit">{{ teams.count }}</div>
+                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Active Teams</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40">
+                        <div class="text-3xl font-black text-dark font-outfit">{{ total_attempts }}</div>
+                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Tests Taken</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="lg:col-span-2 space-y-10">
+                <!-- Teams Section -->
+                <section class="space-y-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <h3 class="font-outfit text-2xl font-bold text-dark flex items-center gap-3">
+                            <i data-lucide="users" class="text-primary"></i>
+                            Competitor Squads
+                        </h3>
+                        <div class="flex items-center gap-6">
+                            <a href="{% url 'core:team_add' %}"
+                                class="flex items-center gap-2 text-xs font-bold text-primary hover:text-dark transition-all uppercase tracking-widest border border-primary/20 bg-primary/5 px-4 py-2 rounded-xl">
+                                <i data-lucide="plus" size="14"></i>
+                                Register Team
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-10">
+                        {% for team in teams %}
+                        <div
+                            class="team-card bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-300/30 overflow-hidden group">
+                            <div class="flex flex-col md:flex-row">
+                                <!-- Team Sidebar/Header -->
+                                <div
+                                    class="bg-slate-50 p-8 md:w-1/3 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-100 transition-colors duration-500">
+                                    <div class="space-y-4">
+                                        <div class="flex items-start justify-between">
+                                            <div
+                                                class="w-16 h-16 rounded-3xl bg-primary text-white flex items-center justify-center text-3xl font-black font-outfit shadow-lg shadow-primary/20">
+                                                {{ team.name|slice:":1" }}
+                                            </div>
+                                            <div
+                                                class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                                Rank #{{ team.rank }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-outfit text-2xl font-extrabold text-dark leading-tight">{{ team.name }}</h4>
+                                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                {{ team.members.count }} Active Members</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-8 md:pt-0">
+                                        <div
+                                            class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">
+                                            Total Team Power</div>
+                                        <div class="flex items-baseline gap-2">
+                                            <span class="text-4xl font-black text-primary font-outfit">{{ team.points }}</span>
+                                            <span
+                                                class="text-xs font-black text-slate-400 uppercase tracking-widest">PTS</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Members Power List -->
+                                <div class="p-8 md:w-2/3">
+                                    <div
+                                        class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6 border-b border-slate-50 pb-3">
+                                        Individual Member Performance</div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {% for member in team.members.all %}
+                                        <div
+                                            class="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-primary/20 hover:bg-white transition-all group/member">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-xs font-bold text-slate-400 group-hover/member:bg-primary group-hover/member:text-white transition-colors">
+                                                    {{ member.email|slice:":1"|upper }}
+                                                </div>
+                                                <div class="overflow-hidden">
+                                                    <div class="text-sm font-bold text-dark truncate w-24 sm:w-32">{{ member.email }}</div>
+                                                    <div class="text-[10px] font-bold text-slate-400 uppercase">Student
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-sm font-black text-dark font-outfit">{{ member.personalprofile.points|default:0 }}</div>
+                                                <div
+                                                    class="text-[8px] font-black text-slate-300 uppercase tracking-widest">
+                                                    XP</div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div
+                            class="col-span-full py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
+                            <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-6">
+                                <i data-lucide="users" size="32" class="opacity-50"></i>
+                            </div>
+                            <p class="font-bold uppercase tracking-widest text-xs mb-8">No teams found for your
+                                institution</p>
+                            <a href="{% url 'core:team_add' %}" class="btn btn-primary h-12 px-8">
+                                <i data-lucide="plus" size="18"></i>
+                                Start Building Teams
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- Recent Activity Section -->
+                <section class="space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <h3 class="font-outfit text-2xl font-bold text-dark flex items-center gap-3">
+                            <i data-lucide="activity" class="text-secondary"></i>
+                            Test Performance
+                        </h3>
+                    </div>
+
+                    <div
+                        class="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-300/40 overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th
+                                        class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        Challenge</th>
+                                    <th
+                                        class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        Team</th>
+                                    <th
+                                        class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        Score</th>
+                                    <th
+                                        class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">
+                                        Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                {% for session in test_sessions %}
+                                <tr class="hover:bg-slate-50 transition-colors group">
+                                    <td class="px-8 py-5">
+                                        <div class="font-bold text-dark capitalize">{{ session.test.name }}</div>
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase">{{
+                                            session.test.difficulty }}</div>
+                                    </td>
+                                    <td class="px-8 py-5">
+                                        <span class="text-sm font-semibold text-slate-600 capitalize">{{
+                                            session.team.name }}</span>
+                                    </td>
+                                    <td class="px-8 py-5">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-10 h-1 rounded-full bg-slate-100 overflow-hidden">
+                                                <div class="h-full bg-primary" style="width: {{ session.score }}%">
+                                                </div>
+                                            </div>
+                                            <span class="text-sm font-black text-primary">{{ session.score }}%</span>
+                                        </div>
+                                    </td>
+                                    <td
+                                        class="px-8 py-5 text-right font-bold text-xs text-slate-400 uppercase tabular-nums">
+                                        {{ session.start_time|date:"d M Y" }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4"
+                                        class="px-8 py-12 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">
+                                        No trivia attempts recorded yet
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+        {% else %}
+        <!-- No School State -->
+        <div
+            class="py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center px-8">
+            <div class="w-24 h-24 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-8">
+                <i data-lucide="shield-alert" size="48"></i>
+            </div>
+            <h2 class="text-3xl font-outfit font-extrabold text-dark tracking-tight mb-4">No School Assigned</h2>
+            <p class="text-slate-500 font-medium max-w-md mx-auto mb-10 leading-relaxed">
+                Your account is set as a Patron, but you aren't managing any institution yet. Please contact the
+                administrator to be linked to your school.
+            </p>
+            <a href="{% url 'home:index' %}#contact" class="btn btn-primary px-10 py-4">
+                Contact Support
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style type="text/tailwindcss">
+    .team-card {
+        @apply transition-all duration-500 ease-out;
+    }
+    .team-card:hover {
+        @apply -translate-y-4 shadow-2xl shadow-primary/20 border-primary/40;
+    }
+    .team-card:hover .bg-slate-50 {
+        @apply bg-primary/5;
+    }
+    .group\/member:hover {
+        @apply shadow-lg shadow-slate-200;
+    }
+</style>
+{% endblock %}

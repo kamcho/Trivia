@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Active Challenges | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-20 px-[5%] lg:px-[10%] bg-surface/50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-20 animate-in fade-in slide-in-from-top-8 duration-700">
+            <h1 class="font-outfit text-5xl font-extrabold text-dark tracking-tight mb-4">Intellectual Challenges</h1>
+            <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Test your knowledge, represent your school,
+                and climb the leaderboard.</p>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 items-stretch">
+            {% for test in tests %}
+            <div class="flex">
+                <div
+                    class="group bg-white rounded-[2.5rem] border-2 border-slate-500 p-10 shadow-2xl transition-all duration-500 relative overflow-hidden flex flex-col flex-1 hover:shadow-slate-400/20">
+                    <div class="flex justify-between items-start mb-10">
+                        <span class="px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest
+                            {% if test.difficulty == 'easy' %} bg-primary/10 text-primary
+                            {% elif test.difficulty == 'medium' %} bg-accent/10 text-accent
+                            {% else %} bg-secondary/10 text-secondary {% endif %}">
+                            {{ test.get_difficulty_display }}
+                        </span>
+                        <i data-lucide="brain" class="text-slate-100 absolute -top-4 -right-4" size="120"></i>
+                    </div>
+
+                    <div class="relative z-10 flex flex-col flex-1 gap-6">
+                        <h3
+                            class="font-outfit text-2xl font-bold text-dark leading-tight group-hover:text-primary transition-colors capitalize">
+                            {{ test.name }}</h3>
+
+                        <div class="flex items-center gap-6 py-2">
+                            <div class="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-wider">
+                                <i data-lucide="clock" size="14"></i>
+                                {{ test.time }} Mins
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-wider">
+                                <i data-lucide="help-circle" size="14"></i>
+                                {{ test.questions.count }} Questions
+                            </div>
+                        </div>
+
+                        <p class="text-slate-500 font-medium text-sm leading-relaxed line-clamp-3 flex-grow">{{ test.description }}
+                        </p>
+
+                        <div class="pt-8">
+                            <a href="{% url 'home:tests_detail' test.pk %}"
+                                class="btn btn-primary justify-center w-full py-4 rounded-2xl group-hover:shadow-primary/30 shadow-lg transition-all">
+                                Enter Challenge
+                                <i data-lucide="play" size="16" class="fill-current"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div
+                class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-6">
+                    <i data-lucide="zap-off" size="40"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-400">No challenges available.</h2>
+                <p class="text-slate-400 font-medium mt-2">The league masters are currently preparing new tests.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if user.is_superuser %}
+<a href="{% url 'home:tests_add' %}"
+    class="fixed bottom-10 right-10 btn bg-secondary text-white py-4 px-8 rounded-full shadow-2xl shadow-secondary/40 z-50 hover:bg-red-700">
+    <i data-lucide="plus"></i>
+    Compose Challenge
+</a>
+{% endif %}
+{% endblock %}

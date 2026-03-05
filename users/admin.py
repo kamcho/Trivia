@@ -1,26 +1,24 @@
 from django.contrib import admin
-from .models import MyUser, PersonalProfile
+from django.contrib.auth.admin import UserAdmin
+from .models import User
 
-@admin.register(MyUser)
-class MyUserAdmin(admin.ModelAdmin):
-    list_display = ('email',   'role', 'is_active')
-    list_filter = ('role', 'is_active', 'is_staff', 'date_joined')
-    search_fields = ('email', 'first_name', 'last_name')
-    ordering = ('-date_joined',)
+class CustomUserAdmin(UserAdmin):
+    model = User
+    list_display = ('email', 'is_staff', 'is_active',)
+    list_filter = ('email', 'is_staff', 'is_active',)
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('role', 'school')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login',)}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password', 'is_staff', 'is_active')}
+        ),
+    )
+    search_fields = ('email',)
+    ordering = ('email',)
 
-@admin.register(PersonalProfile)
-class PersonalProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'first_name', 'last_name', 'phone', 'location', 'gender', 'created_at')
-    list_filter = ('gender', 'created_at')
-    search_fields = ('user__email', 'first_name', 'last_name', 'phone', 'location')
-    ordering = ('-created_at',)
-
-
-    list_display = ('user',  'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('user__email', 'user__first_name', 'user__last_name')
-    ordering = ('-created_at',)
-    
-    readonly_fields = ('created_at',)
-    
-   
+admin.site.register(User, CustomUserAdmin)

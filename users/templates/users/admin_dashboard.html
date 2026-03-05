@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Platform Core | KSTL Admin Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa{% endblock %}
+
+{% block content %}
+<div class="py-12 px-[5%] lg:px-[10%] bg-surface min-h-screen">
+    <!-- Header Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div class="space-y-2">
+            <h1 class="font-outfit text-4xl font-black text-dark tracking-tight uppercase">Platform Command Center Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa</h1>
+            <p class="text-slate-500 font-medium">High-level orchestration and league analytics.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="px-6 py-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-sm font-bold text-dark">System Status: Optimal</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Overview Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="bg-dark p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            <div class="relative z-10">
+                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">Total Candidates</div>
+                <div class="text-4xl font-black text-white mb-2">{{ total_users }}</div>
+                <div class="text-xs text-green-500 font-bold flex items-center gap-1">
+                    <i data-lucide="trending-up" size="12"></i>
+                    +12% this month
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-secondary">Active Leagues</div>
+            <div class="text-4xl font-black text-dark mb-2">{{ total_schools }}</div>
+            <div class="text-xs text-slate-400 font-medium italic">Verified schools only</div>
+        </div>
+
+        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-accent">Total Tests</div>
+            <div class="text-4xl font-black text-dark mb-2">{{ total_tests }}</div>
+            <div class="text-xs text-slate-400 font-medium">Global test database</div>
+        </div>
+
+        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-primary">Points Awarded</div>
+            <div class="text-4xl font-black text-dark mb-2">{{ total_points|default:"0" }}</div>
+            <div class="text-xs text-slate-400 font-medium">Total intellectual capital</div>
+        </div>
+    </div>
+
+    <!-- Management Sections Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- User Growth Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa -->
+        <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-10">
+                <h3 class="font-outfit text-2xl font-black text-dark">User Demographics</h3>
+                <div class="flex gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors">
+                        <i data-lucide="more-horizontal" size="18" class="text-slate-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-12">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-bold text-slate-600">Students</span>
+                        <span class="font-black text-dark">{{ student_count }}</span>
+                    </div>
+                    <div class="h-3 bg-surface rounded-full overflow-hidden">
+                        <div class="h-full bg-primary rounded-full" style="width: {% widthratio student_count total_users 100 %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-bold text-slate-600">Patrons</span>
+                        <span class="font-black text-dark">{{ patron_count }}</span>
+                    </div>
+                    <div class="h-3 bg-surface rounded-full overflow-hidden">
+                        <div class="h-full bg-secondary rounded-full" style="width: {% widthratio patron_count total_users 100 %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-bold text-slate-600">Administrators</span>
+                        <span class="font-black text-dark">{{ admin_count }}</span>
+                    </div>
+                    <div class="h-3 bg-surface rounded-full overflow-hidden">
+                        <div class="h-full bg-accent rounded-full" style="width: {% widthratio admin_count total_users 100 %}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Logs / Recent Activity Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa -->
+        <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <h3 class="font-outfit text-2xl font-black text-dark mb-10">Platform Logs</h3>
+            <div class="flex-1 space-y-6">
+                {% for log in recent_registrations %}
+                <div class="flex items-center gap-4 group">
+                    <div class="w-2 h-2 rounded-full bg-primary opacity-50 group-hover:scale-150 transition-transform"></div>
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-dark">New {{ log.role }} registered: {{ log.email }}</p>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ log.date_joined|timesince }} ago</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-slate-400 text-center py-20 font-medium">No recent activity detected.</p>
+                {% endfor %}
+            </div>
+            <button class="w-full mt-10 py-5 rounded-2xl bg-surface border border-slate-100 text-slate-500 font-bold hover:bg-slate-50 transition-colors uppercase tracking-widest text-[10px]">
+                Explore Audit Trails
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

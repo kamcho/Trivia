@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ school.name }} | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; background: #f5f6fa; padding-top: 2rem; padding-bottom: 4rem;">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 0 5%; display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Breadcrumb / Header Actions -->
+        <div>
+            <a href="{% url 'core:school_list' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #8892b0; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#1a1a2e'" onmouseout="this.style.color='#8892b0'">
+                <i data-lucide="arrow-left" size="14"></i>
+                Back to Institutions
+            </a>
+        </div>
+
+        <!-- Header Card -->
+        <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 24px; padding: 3rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 3rem; flex-wrap: wrap; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+            <!-- Decorative circle -->
+            <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(233,69,96,0.15) 0%, rgba(233,69,96,0) 70%); border-radius: 50%;"></div>
+
+            <div style="width: 160px; height: 160px; border-radius: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1;">
+                {% if school.logo %}
+                <img src="{{ school.logo.url }}" alt="{{ school.name }}" style="max-width: 80%; max-height: 80%; object-fit: contain;">
+                {% else %}
+                <i data-lucide="school" size="64" style="color: rgba(255,255,255,0.2);"></i>
+                {% endif %}
+            </div>
+
+            <div style="flex: 1; min-width: 300px; position: relative; z-index: 1;">
+                <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 900; color: #fff; margin: 0 0 0.5rem; line-height: 1.1;">{{ school.name }}</h1>
+                
+                <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(233,69,96,0.15); color: #e94560; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 1.5rem; border: 1px solid rgba(233,69,96,0.3);">
+                    <i data-lucide="map-pin" size="14"></i>
+                    {{ school.city }}, {{ school.country }}
+                </div>
+                
+                <p style="color: #8892b0; font-size: 0.95rem; font-weight: 500; line-height: 1.6; max-width: 800px; margin: 0;">
+                    Elite intellectual powerhouse representing the pride of {{ school.city }}. Contributing to the national trivia league with excellence.
+                </p>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <!-- Institution Details -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden;">
+                <!-- Decorative shape -->
+                <div style="position: absolute; bottom: -30px; left: -30px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0) 70%); border-radius: 50%;"></div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; position: relative; z-index: 1;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(59,130,246,0.2);">
+                        <i data-lucide="info" style="color: #60a5fa;" size="20"></i>
+                    </div>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0;">Institution Details</h3>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative; z-index: 1;">
+                    <div>
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;">Physical Address</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ school.address|default:"Not provided" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;">City / County</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ school.city|default:"Not provided" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;">Country</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ school.country|default:"Not provided" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Portal -->
+            <div style="background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%); border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden;">
+                <!-- Decorative shape -->
+                <div style="position: absolute; top: -30px; right: -30px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0) 70%); border-radius: 50%;"></div>
+
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; position: relative; z-index: 1;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239,68,68,0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(239,68,68,0.2);">
+                        <i data-lucide="phone" style="color: #fca5a5;" size="20"></i>
+                    </div>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0;">Contact Portal</h3>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative; z-index: 1;">
+                    <div>
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;">Primary Email</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ school.email|default:"Not provided" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;">Direct Phone</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ school.phone|default:"Not provided" }}</div>
+                    </div>
+                    {% if school.website %}
+                    <div>
+                        <div style="font-size: 0.65rem; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem;">Official Website</div>
+                        <a href="{{ school.website }}" target="_blank" style="font-size: 1rem; font-weight: 800; color: #60a5fa; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">{{ school.website }}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+            <a href="#" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; padding: 1.25rem; border-radius: 16px; font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 4px 15px rgba(16,185,129,0.3); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
+                Challenge this School
+                <i data-lucide="swords" size="20"></i>
+            </a>
+            <a href="#" style="flex: 1; min-width: 250px; background: #fff; border: 2px solid #e2e8f0; color: #1e293b; padding: 1.25rem; border-radius: 16px; font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                View Representative Teams
+                <i data-lucide="users" size="20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

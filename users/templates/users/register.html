@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Join the League | KSTL Registration{% endblock %}
+
+{% block content %}
+<div class="py-20 px-[5%] lg:px-[10%] bg-surface/30 min-h-[calc(100vh-200px)] flex items-center justify-center">
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden">
+        
+        <!-- Left Side: Interactive Branding -->
+        <div class="hidden lg:flex flex-col justify-between p-20 bg-dark text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-80 h-80 bg-primary/20 rounded-full -mr-40 -mt-40 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-80 h-80 bg-secondary/20 rounded-full -ml-40 -mb-40 blur-3xl"></div>
+            
+            <div class="relative z-10 space-y-8">
+                <a href="{% url 'home:index' %}" class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+                        <i data-lucide="trophy" class="text-primary" size="28"></i>
+                    </div>
+                    <span class="font-outfit text-3xl font-black tracking-tighter">KSTL</span>
+                </a>
+                <h2 class="font-outfit text-5xl font-extrabold leading-tight tracking-tighter">Start Your Intellectual Journey Today.</h2>
+                <p class="text-slate-400 text-lg font-medium leading-relaxed">Join thousands of students across Kenya in the ultimate battle of wits and Knowledge.</p>
+            </div>
+
+            <div class="relative z-10 space-y-10">
+                <div class="flex items-center gap-6">
+                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/5">
+                        <i data-lucide="shield-check" class="text-accent" size="24"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Verified Platform</div>
+                        <div class="font-bold text-base">Secure & Fair Play</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/5">
+                        <i data-lucide="sparkles" class="text-primary" size="24"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Global Ranking</div>
+                        <div class="font-bold text-base">Real-time Leaderboards</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Registration Form -->
+        <div class="p-12 md:p-20 space-y-12">
+            <div class="space-y-3">
+                <h1 class="font-outfit text-4xl font-black text-dark tracking-tight">Create Account</h1>
+                <p class="text-slate-400 font-medium">Already have an account? <a href="{% url 'users:login' %}" class="text-primary font-bold hover:underline">Log in</a></p>
+            </div>
+
+            <form method="post" class="space-y-8">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="p-5 bg-secondary/5 border border-secondary/10 rounded-2xl text-secondary text-sm font-bold space-y-2">
+                    <p>Please correct the errors below:</p>
+                    <ul class="list-disc list-inside text-xs font-medium">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">First Name</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size="20"></i>
+                            <input type="text" name="first_name" required class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 pl-14 font-medium text-dark focus:border-primary focus:shadow-lg focus:shadow-primary/5 transition-all outline-none placeholder:text-slate-300" placeholder="First Name">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Last Name</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size="20"></i>
+                            <input type="text" name="last_name" required class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 pl-14 font-medium text-dark focus:border-primary focus:shadow-lg focus:shadow-primary/5 transition-all outline-none placeholder:text-slate-300" placeholder="Last Name">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Email Address</label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size="20"></i>
+                        <input type="email" name="email" required class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 pl-14 font-medium text-dark focus:border-primary focus:shadow-lg focus:shadow-primary/5 transition-all outline-none placeholder:text-slate-300" placeholder="name@school.edu">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">I am a...</label>
+                        <div class="relative">
+                            <i data-lucide="users" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 z-10" size="20"></i>
+                            <select name="role" required class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 pl-14 font-medium text-dark focus:border-primary focus:shadow-lg focus:shadow-primary/5 transition-all outline-none appearance-none relative">
+                                <option value="student">Student</option>
+                                <option value="patron">Patron</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size="20"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">My School</label>
+                        <div class="relative">
+                            <i data-lucide="school" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 z-10" size="20"></i>
+                            <select name="school" required class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 pl-14 font-medium text-dark focus:border-primary focus:shadow-lg focus:shadow-primary/5 transition-all outline-none appearance-none relative">
+                                {% for school in form.fields.school.queryset %}
+                                    <option value="{{ school.pk }}">{{ school.name|truncatechars:30 }}</option>
+                                {% endfor %}
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size="20"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Password</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size="20"></i>
+                        <input type="password" name="password" required class="w-full bg-white border-2 border-slate-200 rounded-2xl p-4 pl-14 font-medium text-dark focus:border-primary focus:shadow-lg focus:shadow-primary/5 transition-all outline-none placeholder:text-slate-300" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full py-6 rounded-2xl shadow-2xl shadow-primary/30 hover:-translate-y-1 transition-all text-lg font-outfit">
+                    Create My Account
+                    <i data-lucide="user-plus" size="24"></i>
+                </button>
+
+                <p class="text-[10px] text-slate-400 text-center font-medium leading-relaxed max-w-xs mx-auto">
+                    By registering, you agree to the KSTL <a href="#" class="underline font-bold text-slate-500">Terms of Service</a> and <a href="#" class="underline font-bold text-slate-500">Privacy Policy</a>.
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

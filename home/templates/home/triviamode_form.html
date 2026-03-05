@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Trivia Mode | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-20 px-4 min-h-[calc(100vh-200px)] flex items-center justify-center">
+    <div
+        class="w-full max-w-3xl bg-white p-8 md:p-12 rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-200/50">
+        <div class="text-center mb-10">
+            <h2 class="font-outfit text-3xl font-extrabold text-dark mb-2 tracking-tight">New Trivia Mode</h2>
+            <p class="text-slate-500 font-medium">Create a unique challenge format.</p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="space-y-2">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+
+                {% if field.errors %}
+                <ul class="bg-secondary/5 border-l-4 border-secondary p-3 mt-1 rounded-r-lg">
+                    {% for error in field.errors %}
+                    <li class="text-secondary text-sm font-bold flex items-center gap-2">
+                        <i data-lucide="alert-circle" size="14"></i>
+                        {{ error }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-4 space-y-4">
+                <button type="submit" class="w-full btn btn-primary justify-center py-4 text-base">
+                    Save Mode Template
+                    <i data-lucide="layout" size="20"></i>
+                </button>
+
+                <a href="{% url 'home:index' %}"
+                    class="block text-center text-sm font-bold text-slate-400 hover:text-dark transition-colors tracking-wide uppercase">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input:not([type="checkbox"]), select, textarea').forEach(el => {
+        el.classList.add('form-input');
+    });
+</script>
+{% endblock %}

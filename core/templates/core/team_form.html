@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register New Team | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-12 px-[5%] lg:px-[10%] bg-surface/30 min-h-[calc(100vh-200px)] flex flex-col items-center">
+    <div class="w-full max-w-3xl space-y-8">
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
+            <a href="{% url 'users:dashboard' %}" class="hover:text-primary transition-colors">Portal</a>
+            <i data-lucide="chevron-right" size="14"></i>
+            <span class="text-slate-600">Register Team</span>
+        </nav>
+
+        <div
+            class="bg-white p-10 md:p-16 rounded-[3rem] border border-slate-200 shadow-2xl shadow-slate-300/30 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[80px]"></div>
+
+            <div class="relative z-10">
+                <header class="mb-12">
+                    <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
+                        <i data-lucide="users" size="32"></i>
+                    </div>
+                    <h1 class="font-outfit text-4xl font-extrabold text-dark tracking-tight mb-4">Register New Team</h1>
+                    <p class="text-slate-500 font-medium italic">Assemble your elite squad for the next trivia
+                        challenge.</p>
+                </header>
+
+                <form method="post" class="space-y-8" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div
+                        class="p-4 bg-secondary/5 border border-secondary/20 rounded-2xl text-secondary text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 gap-8">
+                        {% for field in form %}
+                        <div class="space-y-2 group">
+                            <label for="{{ field.id_for_label }}"
+                                class="block text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                <span class="text-secondary opacity-50">*</span>
+                                {% endif %}
+                            </label>
+
+                            <div class="relative transition-all duration-300">
+                                {{ field }}
+                                {% if field.help_text %}
+                                <p class="mt-2 text-xs text-slate-400 font-medium">{{ field.help_text }}</p>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="mt-2 space-y-1">
+                                    {% for error in field.errors %}
+                                    <p class="text-xs font-bold text-secondary flex items-center gap-1">
+                                        <i data-lucide="alert-circle" size="12"></i>
+                                        {{ error }}
+                                    </p>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="pt-8 border-t border-slate-100 flex flex-col sm:flex-row gap-4 items-center">
+                        <button type="submit" class="btn btn-primary w-full sm:w-auto h-14 px-12 rounded-2xl">
+                            Register Team
+                            <i data-lucide="chevron-right" size="20"></i>
+                        </button>
+                        <a href="{% url 'users:dashboard' %}"
+                            class="text-sm font-bold text-slate-400 hover:text-dark transition-colors uppercase tracking-widest">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 text-slate-400">
+            <i data-lucide="shield-check" size="16"></i>
+            <span class="text-[10px] font-black uppercase tracking-[0.2em]">Institutional Authentication Enabled</span>
+        </div>
+    </div>
+</div>
+
+<style type="text/tailwindcss">
+    /* Styling for the members select multiple to match the theme */
+    select[multiple] {
+        @apply outline-none !important;
+    }
+
+    select[multiple] option {
+        @apply py-2 px-4 rounded-lg my-1 transition-all !important;
+    }
+
+    select[multiple] option:checked {
+        @apply bg-primary text-white !important;
+    }
+</style>
+{% endblock %}

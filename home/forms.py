@@ -1,465 +1,72 @@
 from django import forms
-from .models import (
-    Church, TriviaGroup, QuestionCategory, Question, Choice,
-    ActivityCategory, CompetitionActivity, Competition, Cohort, TestQuiz,
-    ActivityInstruction, ActivityRule, CompetitionRegistrationWindow, CompetitionScheduleItem
-)
-from .models import Challenge
+from .models import Cohort, TriviaMode, Question, QuestionOption, QuestionImage, Tests
 
-
-class ChurchForm(forms.ModelForm):
+class CohortForm(forms.ModelForm):
     class Meta:
-        model = Church
-        fields = [
-            'name', 'category', 'address', 'city', 'location', 'country',
-            'contact_email', 'phone_number', 'website', 'logo', 'established_year',
-            'is_active'
-        ]
+        model = Cohort
+        fields = ['name', 'description', 'start_date', 'end_date', 'status', 'is_open']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Church name'}),
-            'category': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'address': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Street, address'}),
-            'city': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'location': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Neighborhood/Region'}),
-            'country': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'contact_email': forms.EmailInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'phone_number': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'website': forms.URLInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'logo': forms.FileInput(attrs={'class': 'hidden', 'id': 'logo-upload'}),
-            'established_year': forms.NumberInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'min': 1}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'is_open': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-
-class QuickQuizCreateForm(forms.ModelForm):
-    """A minimal quiz creation form for inline use on challenge pages."""
-    # Extra controls for challenge quick create
-    activities = forms.ModelMultipleChoiceField(
-        queryset=CompetitionActivity.objects.filter(is_active=True).order_by('name'),
-        required=False,
-        widget=forms.SelectMultiple(attrs={
-            'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-            'size': 6
-        }),
-        help_text='Select one or more activities to pull questions from'
-    )
-    quiz_size = forms.IntegerField(
-        required=False,
-        min_value=1,
-        max_value=100,
-        widget=forms.NumberInput(attrs={
-            'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-            'placeholder': 'Number of questions (e.g., 10)'
-        }),
-        help_text='How many questions to include (randomly selected)'
-    )
+class TriviaModeForm(forms.ModelForm):
     class Meta:
-        model = TestQuiz
-        fields = ['name', 'description', 'difficulty', 'quiz_type', 'participation', 'level', 'is_active']
+        model = TriviaMode
+        fields = ['name', 'description']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Quiz name'}),
-            'description': forms.Textarea(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'rows': 2, 'placeholder': 'Short description'}),
-            'difficulty': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'quiz_type': forms.HiddenInput(),
-            'participation': forms.HiddenInput(),
-            'level': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Hardcode quiz type to Competition in the form UI
-        self.fields['quiz_type'].initial = 'Competition'
-
-    def clean(self):
-        cleaned = super().clean()
-        activities = cleaned.get('activities')
-        if not activities or activities.count() == 0:
-            self.add_error('activities', 'Select at least one activity.')
-        return cleaned
-
-
-class ChallengeCreateForm(forms.ModelForm):
-    class Meta:
-        model = Challenge
-        fields = ['name', 'description', 'mode', 'best_of', 'max_participants', 'scheduled_at', 'expires_at']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'placeholder': 'Challenge name'}),
-            'description': forms.Textarea(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'rows': 3}),
-            'mode': forms.Select(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'best_of': forms.NumberInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'min': 1}),
-            'max_participants': forms.NumberInput(attrs={'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200', 'min': 2}),
-            'scheduled_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-            'expires_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'}),
-        }
-
-
-class ChoiceForm(forms.ModelForm):
-    class Meta:
-        model = Choice
-        fields = ['choice_text', 'is_correct', 'explanation']
-        widgets = {
-            'choice_text': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Enter choice text'
-            }),
-            'is_correct': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-            'explanation': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Optional explanation for this choice',
-                'rows': 3
-            }),
-        }
-
-class TriviaGroupForm(forms.ModelForm):
-    class Meta:
-        model = TriviaGroup
-        fields = [
-            'name', 'church', 'category', 'description', 'patron', 'captain', 
-            'max_members', 'is_active'
-        ]
-        widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Group name'
-            }),
-            'church': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'category': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Describe your trivia group...',
-                'rows': 4
-            }),
-            'patron': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'captain': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'max_members': forms.NumberInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 1,
-                'max': 20
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-        }
-
-
-class QuestionCategoryForm(forms.ModelForm):
-    class Meta:
-        model = QuestionCategory
-        fields = ['name', 'description', 'is_active']
-        widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Category name (e.g., Old Testament, New Testament)'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Describe this question category...',
-                'rows': 3
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-        }
-
 
 class QuestionForm(forms.ModelForm):
-    allowed_levels = forms.MultipleChoiceField(
-        required=False,
-        choices=Question.level_category,
-        widget=forms.CheckboxSelectMultiple(attrs={
-            'class': 'space-y-1'
-        }),
-        label='Applicable Levels'
-    )
-
     class Meta:
         model = Question
-        fields = [
-            'categories', 'activities', 'level', 'allowed_levels', 'question_text', 'difficulty', 'question_type',
-            'explanation', 'bible_reference', 'points', 'penalty', 'is_active'
-        ]
+        fields = ['question_text', 'question_type', 'difficulty', 'score', 'time', 'explanation', 'metadata']
         widgets = {
-            'categories': forms.SelectMultiple(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'size': 6
-            }),
-            'activities': forms.SelectMultiple(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'size': 6
-            }),
-            'level': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'question_text': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Enter your trivia question...',
-                'rows': 4
-            }),
-            'difficulty': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'question_type': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'explanation': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Optional explanation for the correct answer...',
-                'rows': 3
-            }),
-            'bible_reference': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'e.g., John 3:16, Genesis 1:1'
-            }),
-            'points': forms.NumberInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 1,
-                'max': 10
-            }),
-            'penalty': forms.NumberInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 0,
-                'max': 10
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
+            'question_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'question_type': forms.Select(attrs={'class': 'form-control'}),
+            'difficulty': forms.Select(attrs={'class': 'form-control'}),
+            'score': forms.NumberInput(attrs={'class': 'form-control'}),
+            'time': forms.NumberInput(attrs={'class': 'form-control'}),
+            'explanation': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Explanation shown to students after answering'}),
+            'metadata': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional JSON metadata'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Initialize allowed_levels from instance if present
-        if self.instance and getattr(self.instance, 'allowed_levels', None):
-            self.fields['allowed_levels'].initial = self.instance.allowed_levels
-
-    def clean_allowed_levels(self):
-        data = self.cleaned_data.get('allowed_levels') or []
-        # Ensure 'All' is not combined with others
-        if 'All' in data and len(data) > 1:
-            data = ['All']
-        return data
-
-
-class ActivityCategoryForm(forms.ModelForm):
+class QuestionImageForm(forms.ModelForm):
     class Meta:
-        model = ActivityCategory
-        fields = ['name', 'slug', 'description', 'is_active']
+        model = QuestionImage
+        fields = ['image', 'caption', 'order']
         widgets = {
-            'name': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'slug': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Unique identifier (e.g., youth-games)'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Describe this activity category...',
-                'rows': 3
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'caption': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional caption'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0'}),
         }
 
-
-class CompetitionActivityForm(forms.ModelForm):
+class TestForm(forms.ModelForm):
     class Meta:
-        model = CompetitionActivity
-        fields = ['name', 'categories', 'description', 'is_active']
+        model = Tests
+        fields = ['name', 'description', 'difficulty', 'mode', 'questions', 'time', 'is_active']
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Competition activity name'
-            }),
-            'categories': forms.CheckboxSelectMultiple(attrs={
-                'class': 'space-y-2'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Describe this competition activity...',
-                'rows': 4
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'difficulty': forms.Select(attrs={'class': 'form-control'}),
+            'mode': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'questions': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'time': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-
-class ActivityInstructionForm(forms.ModelForm):
+class QuestionOptionForm(forms.ModelForm):
     class Meta:
-        model = ActivityInstruction
-        fields = ['content', 'order', 'is_active']
+        model = QuestionOption
+        fields = ['question', 'option_text', 'is_correct']
         widgets = {
-            'content': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'rows': 2,
-                'placeholder': 'Instruction text'
-            }),
-            'order': forms.NumberInput(attrs={
-                'class': 'w-24 rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 1
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
+            'question': forms.Select(attrs={'class': 'form-control'}),
+            'option_text': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_correct': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-
-class ActivityRuleForm(forms.ModelForm):
-    class Meta:
-        model = ActivityRule
-        fields = ['content', 'order', 'is_active']
-        widgets = {
-            'content': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'rows': 2,
-                'placeholder': 'Rule text'
-            }),
-            'order': forms.NumberInput(attrs={
-                'class': 'w-24 rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 1
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-        }
-
-class CompetitionForm(forms.ModelForm):
-    class Meta:
-        model = Competition
-        fields = ['name', 'description', 'activities', 'start_date', 'end_date', 'is_active']
-        widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Competition name'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Describe this competition...',
-                'rows': 4
-            }),
-            'activities': forms.CheckboxSelectMultiple(attrs={
-                'class': 'space-y-2'
-            }),
-            'start_date': forms.DateInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'type': 'date'
-            }),
-            'end_date': forms.DateInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'type': 'date'
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-        }
-
-
-class TestQuizForm(forms.ModelForm):
-    class Meta:
-        model = TestQuiz
-        fields = [
-            'name', 'description', 'level', 'participation', 'difficulty', 'quiz_type', 'activities', 'questions',
-            'time_limit', 'max_attempts', 'passing_score', 'is_active',
-            'is_public', 'requires_authentication', 'instructions'
-        ]
-        widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Quiz name'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Quiz description',
-                'rows': 3
-            }),
-            'difficulty': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'participation': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'quiz_type': forms.Select(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200'
-            }),
-            'activities': forms.SelectMultiple(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'size': 6
-            }),
-            'questions': forms.SelectMultiple(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'size': 10
-            }),
-            'time_limit': forms.NumberInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Time limit in minutes (optional)',
-                'min': 1
-            }),
-            'max_attempts': forms.NumberInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 1
-            }),
-            'passing_score': forms.NumberInput(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'min': 0,
-                'max': 100
-            }),
-            'is_active': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-            'is_public': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-            'requires_authentication': forms.CheckboxInput(attrs={
-                'class': 'rounded border-slate-700/50 bg-slate-900/60 text-indigo-600'
-            }),
-            'instructions': forms.Textarea(attrs={
-                'class': 'w-full rounded-lg bg-slate-900/60 border border-slate-700/50 px-3 py-2 text-sm text-slate-200',
-                'placeholder': 'Instructions for taking this quiz',
-                'rows': 4
-            }),
-        }
-
-
-class CompetitionRegistrationWindowForm(forms.ModelForm):
-    opens_at = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
-    )
-    closes_at = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
-    )
-    class Meta:
-        model = CompetitionRegistrationWindow
-        fields = ['competition', 'opens_at', 'closes_at', 'capacity', 'fee_amount', 'fee_currency', 'terms_url', 'notes', 'is_active']
-        widgets = {
-            'competition': forms.Select(attrs={'class': 'vTextField'}),
-        }
-
-
-class CompetitionScheduleItemForm(forms.ModelForm):
-    start_at = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
-    )
-    end_at = forms.DateTimeField(
-        required=False,
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        input_formats=['%Y-%m-%dT%H:%M']
-    )
-    class Meta:
-        model = CompetitionScheduleItem
-        fields = ['competition', 'title', 'description', 'start_at', 'end_at', 'location_hint', 'order', 'is_public']
-        widgets = {}

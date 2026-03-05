@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}National Rankings | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div style="min-height: calc(100vh - 80px); background: #f5f6fa; padding: 2rem 5%;">
+    <div style="max-width: 1280px; margin: 0 auto;">
+
+        <!-- Header -->
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: #1a1a2e; margin: 0 0 0.25rem;">National Rankings 🏆</h1>
+                <p style="color: #8892b0; font-size: 0.85rem; font-weight: 500; margin: 0;">Real-time leaderboard · Season 2026</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.35rem 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <div style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                    <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #10b981;">Live</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ TOP 3 PODIUMS SIDE BY SIDE ═══════════ -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+
+            <!-- Team Top 3 Card -->
+            <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <div style="width: 4px; height: 20px; background: #e94560; border-radius: 4px;"></div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; color: #1a1a2e; margin: 0;">Top Teams</h2>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: end;">
+                    {% for team in teams %}
+                    {% if forloop.counter <= 3 %}
+                    <div style="flex: 1; text-align: center; padding: {% if forloop.counter == 1 %}1.5rem 0.5rem{% else %}1rem 0.5rem{% endif %}; border-radius: 16px; {% if forloop.counter == 1 %}background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #e94560;{% else %}background: #f8fafc; border: 2px solid #e2e8f0;{% endif %}">
+                        <div style="font-size: {% if forloop.counter == 1 %}1.5rem{% else %}1.25rem{% endif %}; margin-bottom: 0.35rem;">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}</div>
+                        <div style="width: {% if forloop.counter == 1 %}48px{% else %}40px{% endif %}; height: {% if forloop.counter == 1 %}48px{% else %}40px{% endif %}; margin: 0 auto 0.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: {% if forloop.counter == 1 %}1rem{% else %}0.85rem{% endif %}; {% if forloop.counter == 1 %}background: rgba(233,69,96,0.15); color: #e94560;{% else %}background: #fff; border: 2px solid #e2e8f0; color: #1e293b;{% endif %}">{{ team.name|slice:":1" }}</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; {% if forloop.counter == 1 %}color: #fff;{% else %}color: #1e293b;{% endif %} margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ team.name }}</div>
+                        <div style="font-size: 0.55rem; font-weight: 600; {% if forloop.counter == 1 %}color: #8892b0;{% else %}color: #94a3b8;{% endif %} margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ team.school.name }}</div>
+                        <div style="font-family: 'Outfit', sans-serif; font-size: {% if forloop.counter == 1 %}1.5rem{% else %}1.15rem{% endif %}; font-weight: 900; {% if forloop.counter == 1 %}color: #e94560;{% else %}color: #1e293b;{% endif %}">{{ team.points }}</div>
+                        <div style="font-size: 0.5rem; font-weight: 700; {% if forloop.counter == 1 %}color: #64748b;{% else %}color: #94a3b8;{% endif %} text-transform: uppercase;">pts</div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <div style="flex: 1; text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.8rem; font-weight: 600;">No teams yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Scholar Top 3 Card -->
+            <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <div style="width: 4px; height: 20px; background: #00b4d8; border-radius: 4px;"></div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; color: #1a1a2e; margin: 0;">Top Scholars</h2>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: end;">
+                    {% for profile in individuals %}
+                    {% if forloop.counter <= 3 %}
+                    <div style="flex: 1; text-align: center; padding: {% if forloop.counter == 1 %}1.5rem 0.5rem{% else %}1rem 0.5rem{% endif %}; border-radius: 16px; {% if forloop.counter == 1 %}background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #00b4d8;{% else %}background: #f8fafc; border: 2px solid #e2e8f0;{% endif %}">
+                        <div style="font-size: {% if forloop.counter == 1 %}1.5rem{% else %}1.25rem{% endif %}; margin-bottom: 0.35rem;">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}</div>
+                        <div style="width: {% if forloop.counter == 1 %}48px{% else %}40px{% endif %}; height: {% if forloop.counter == 1 %}48px{% else %}40px{% endif %}; margin: 0 auto 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: {% if forloop.counter == 1 %}0.8rem{% else %}0.7rem{% endif %}; {% if forloop.counter == 1 %}background: rgba(0,180,216,0.15); color: #00b4d8;{% elif forloop.counter == 2 %}background: linear-gradient(135deg,#3b82f6,#2563eb); color: #fff;{% else %}background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff;{% endif %}">{{ profile.first_name|slice:":1" }}{{ profile.last_name|slice:":1" }}</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; {% if forloop.counter == 1 %}color: #fff;{% else %}color: #1e293b;{% endif %} margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ profile.first_name }} {{ profile.last_name }}</div>
+                        <div style="font-size: 0.55rem; font-weight: 600; {% if forloop.counter == 1 %}color: #8892b0;{% else %}color: #94a3b8;{% endif %} margin-bottom: 0.5rem;">{{ profile.location|default:"Scholar" }}</div>
+                        <div style="font-family: 'Outfit', sans-serif; font-size: {% if forloop.counter == 1 %}1.5rem{% else %}1.15rem{% endif %}; font-weight: 900; {% if forloop.counter == 1 %}color: #00b4d8;{% else %}color: #1e293b;{% endif %}">{{ profile.points }}</div>
+                        <div style="font-size: 0.5rem; font-weight: 700; {% if forloop.counter == 1 %}color: #64748b;{% else %}color: #94a3b8;{% endif %} text-transform: uppercase;">pts</div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <div style="flex: 1; text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.8rem; font-weight: 600;">No scholars yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════ FULL TABLES WITH TABS ═══════════ -->
+        <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); overflow: hidden;">
+            <!-- Tab Header -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 2px solid #e2e8f0;">
+                <div style="display: flex; gap: 0;">
+                    <button id="tabTeams" onclick="switchTab('teams')" style="padding: 0.5rem 1.25rem; border-radius: 10px; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; background: #1a1a2e; color: #fff; transition: all 0.2s;">🏫 Team Rankings</button>
+                    <button id="tabScholars" onclick="switchTab('scholars')" style="padding: 0.5rem 1.25rem; border-radius: 10px; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; background: transparent; color: #8892b0; transition: all 0.2s; margin-left: 0.5rem;">🎓 Scholar Rankings</button>
+                </div>
+                <span style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Top 10</span>
+            </div>
+
+            <!-- Team Table -->
+            <div id="tableTeams">
+                <div style="display: grid; grid-template-columns: 50px 1fr 1fr 100px 90px; padding: 0.7rem 1.5rem; background: #fafbfc; border-bottom: 1px solid #f1f5f9;">
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">#</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Team</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">School</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; text-align: center;">Members</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; text-align: right;">Points</div>
+                </div>
+                {% for team in teams %}
+                <div style="display: grid; grid-template-columns: 50px 1fr 1fr 100px 90px; padding: 0.8rem 1.5rem; align-items: center; {% if not forloop.last %}border-bottom: 1px solid #f1f5f9;{% endif %} transition: background 0.15s;" onmouseover="this.style.background='#fafbfc'" onmouseout="this.style.background='transparent'">
+                    <div>
+                        {% if forloop.counter == 1 %}
+                        <span style="width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.65rem; color: #fff; background: linear-gradient(135deg, #e94560, #c81d4e);">1</span>
+                        {% elif forloop.counter == 2 %}
+                        <span style="width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.65rem; color: #fff; background: #94a3b8;">2</span>
+                        {% elif forloop.counter == 3 %}
+                        <span style="width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.65rem; color: #fff; background: #d97706;">3</span>
+                        {% else %}
+                        <span style="font-weight: 800; font-size: 0.8rem; color: #cbd5e1; padding-left: 6px;">{{ forloop.counter }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <div style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: #f1f5f9; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; color: #1e293b;">{{ team.name|slice:":1" }}</div>
+                        <span style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">{{ team.name }}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748b;">{{ team.school.name }}</div>
+                    <div style="text-align: center; font-size: 0.8rem; font-weight: 700; color: #64748b;">{{ team.members.count }}</div>
+                    <div style="text-align: right;">
+                        <span style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 1rem; color: #1e293b;">{{ team.points }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="padding: 3rem; text-align: center;">
+                    <p style="color: #94a3b8; font-weight: 600; font-size: 0.8rem; margin: 0;">No teams ranked yet. Be the first!</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Scholar Table -->
+            <div id="tableScholars" style="display: none;">
+                <div style="display: grid; grid-template-columns: 50px 1fr 1fr 90px; padding: 0.7rem 1.5rem; background: #fafbfc; border-bottom: 1px solid #f1f5f9;">
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">#</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Scholar</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Location</div>
+                    <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; text-align: right;">Points</div>
+                </div>
+                {% for profile in individuals %}
+                <div style="display: grid; grid-template-columns: 50px 1fr 1fr 90px; padding: 0.8rem 1.5rem; align-items: center; {% if not forloop.last %}border-bottom: 1px solid #f1f5f9;{% endif %} transition: background 0.15s;" onmouseover="this.style.background='#fafbfc'" onmouseout="this.style.background='transparent'">
+                    <div>
+                        {% if forloop.counter == 1 %}
+                        <span style="width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.65rem; color: #fff; background: linear-gradient(135deg, #00b4d8, #0284c7);">1</span>
+                        {% elif forloop.counter == 2 %}
+                        <span style="width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.65rem; color: #fff; background: #94a3b8;">2</span>
+                        {% elif forloop.counter == 3 %}
+                        <span style="width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.65rem; color: #fff; background: #d97706;">3</span>
+                        {% else %}
+                        <span style="font-weight: 800; font-size: 0.8rem; color: #cbd5e1; padding-left: 6px;">{{ forloop.counter }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <div style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: linear-gradient(135deg, #e94560, #c81d4e); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.6rem; color: #fff;">{{ profile.first_name|slice:":1" }}{{ profile.last_name|slice:":1" }}</div>
+                        <span style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">{{ profile.first_name }} {{ profile.last_name }}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748b;">{{ profile.location|default:"—" }}</div>
+                    <div style="text-align: right;">
+                        <span style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 1rem; color: #1e293b;">{{ profile.points }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="padding: 3rem; text-align: center;">
+                    <p style="color: #94a3b8; font-weight: 600; font-size: 0.8rem; margin: 0;">No scholars ranked yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <a href="{% url 'home:tests_list' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #e94560, #c81d4e); color: #fff; font-weight: 700; padding: 0.75rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(233,69,96,0.25);">
+                    <i data-lucide="zap" size="16"></i> Earn Points
+                </a>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #fff; border: 2px solid #e2e8f0; color: #1e293b; font-weight: 700; padding: 0.75rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.85rem;">
+                    <i data-lucide="user-plus" size="16"></i> Join League
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+</style>
+<script>
+function switchTab(tab) {
+    document.getElementById('tableTeams').style.display = tab === 'teams' ? 'block' : 'none';
+    document.getElementById('tableScholars').style.display = tab === 'scholars' ? 'block' : 'none';
+    const tBtn = document.getElementById('tabTeams'), sBtn = document.getElementById('tabScholars');
+    if (tab === 'teams') { tBtn.style.background='#1a1a2e'; tBtn.style.color='#fff'; sBtn.style.background='transparent'; sBtn.style.color='#8892b0'; }
+    else { sBtn.style.background='#1a1a2e'; sBtn.style.color='#fff'; tBtn.style.background='transparent'; tBtn.style.color='#8892b0'; }
+}
+</script>
+{% endblock %}

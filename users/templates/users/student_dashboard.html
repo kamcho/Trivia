@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | KSTL{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; background: #f5f6fa;">
+
+    <!-- Top Nav Bar (dark) -->
+    
+
+    <!-- Main Content -->
+    <div style="max-width: 1280px; margin: 0 auto; padding: 2rem 5%;">
+
+        <!-- Welcome + Stats -->
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: #1a1a2e; margin: 0 0 0.25rem;">Welcome back, {{ user.personalprofile.first_name }} 👋</h1>
+                <p style="color: #8892b0; font-size: 0.9rem; font-weight: 500; margin: 0;">Stay focused, keep learning!</p>
+            </div>
+            <!-- Stats Pills -->
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                <div style="text-align: center; min-width: 80px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 900; color: #1a1a2e;">{{ total_tests }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 600; color: #8892b0;">Tests Taken</div>
+                </div>
+                <div style="width: 1px; background: #e2e8f0; align-self: stretch;"></div>
+                <div style="text-align: center; min-width: 80px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 900; color: #1a1a2e;">{{ avg_score|floatformat:0 }}<span style="font-size: 0.85rem; color: #8892b0;">%</span></div>
+                    <div style="font-size: 0.65rem; font-weight: 600; color: #8892b0;">Avg. Score</div>
+                </div>
+                <div style="width: 1px; background: #e2e8f0; align-self: stretch;"></div>
+                <div style="text-align: center; min-width: 80px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 900; color: #1a1a2e;">{{ user.personalprofile.points }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 600; color: #8892b0;">Total Points</div>
+                </div>
+                <div style="width: 1px; background: #e2e8f0; align-self: stretch;"></div>
+                <div style="text-align: center; min-width: 80px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 900; color: #e94560;">#{{ rank }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 600; color: #8892b0;">Global Rank</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Team + Quick Actions Row -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+            {% if team %}
+            <div style="min-width: 220px; flex: 1; background: linear-gradient(135deg, #1a1a2e, #0f3460); border-radius: 18px; padding: 1.5rem; position: relative; overflow: hidden;">
+                <div style="position: absolute; bottom: -20px; right: -20px; width: 80px; height: 80px; background: rgba(233,69,96,0.12); border-radius: 50%;"></div>
+                <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #e94560; margin-bottom: 0.75rem;">My Team</div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">{{ team.name }}</div>
+                <div style="font-size: 0.7rem; color: #8892b0; font-weight: 500;">{{ team.school.name }}</div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div>
+                        <div style="font-size: 1.1rem; font-weight: 900; color: #fff;">{{ team.points }}</div>
+                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600;">Points</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.1rem; font-weight: 900; color: #00b4d8;">{{ team.members.count }}</div>
+                        <div style="font-size: 0.55rem; color: #64748b; font-weight: 600;">Members</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if user.school %}
+            <div style="min-width: 200px; flex: 1; background: linear-gradient(135deg, #0f3460, #16213e); border-radius: 18px; padding: 1.5rem; position: relative; overflow: hidden;">
+                <div style="position: absolute; bottom: -20px; right: -20px; width: 80px; height: 80px; background: rgba(0,180,216,0.12); border-radius: 50%;"></div>
+                <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #00b4d8; margin-bottom: 0.75rem;">My School</div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">{{ user.school.name }}</div>
+                <div style="font-size: 0.7rem; color: #8892b0; font-weight: 500;">School Rank #{{ school_rank|default:"--" }}</div>
+            </div>
+            {% endif %}
+
+            <a href="{% url 'home:tests_list' %}" style="min-width: 180px; flex: 1; background: linear-gradient(135deg, #e94560, #c81d4e); border-radius: 18px; padding: 1.5rem; text-decoration: none; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center;">
+                <div style="position: absolute; bottom: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.7); margin-bottom: 0.5rem;">Quick Action</div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff;">Take a Challenge</div>
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.7); font-weight: 500; margin-top: 0.25rem;">Browse available tests →</div>
+            </a>
+
+            <a href="{% url 'core:leaderboard' %}" style="min-width: 180px; flex: 1; background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; border-radius: 18px; padding: 1.5rem; text-decoration: none; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 15px rgba(79,70,229,0.3);">
+                <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.7); margin-bottom: 0.5rem; position: relative; z-index: 1;">Leaderboard</div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff; position: relative; z-index: 1;">View Rankings</div>
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.7); font-weight: 500; margin-top: 0.25rem; position: relative; z-index: 1;">Check your position →</div>
+            </a>
+        </div>
+
+        <!-- Bottom Grid: Activity + Tasks + Profile -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 300px; gap: 1.5rem;">
+
+            <!-- Recent Challenges (left) -->
+            <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; color: #1a1a2e; margin: 0;">Recent Activity</h3>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <span style="padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.7rem; font-weight: 700; background: #1a1a2e; color: #fff; cursor: pointer;">All</span>
+                        <span style="padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.7rem; font-weight: 600; color: #8892b0; cursor: pointer;">Passed</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0;">
+                    {% for session in recent_sessions %}
+                    <a href="{% url 'home:test_result' session.id %}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 0; {% if not forloop.last %}border-bottom: 1px solid #f1f5f9;{% endif %} text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 38px; height: 38px; border-radius: 12px; background: {% cycle '#eff6ff' '#ecfdf5' '#fef3c7' '#f5f3ff' '#fce7f3' %}; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="{% cycle 'book-open' 'brain' 'lightbulb' 'atom' 'globe' %}" style="color: {% cycle '#3b82f6' '#10b981' '#f59e0b' '#8b5cf6' '#ec4899' %};" size="16"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">{{ session.test.name }}</div>
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 500;">{{ session.end_time|date:"M d, Y" }} · {{ session.duration_display }}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; padding-right: 0.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 800; color: {% if session.score >= 70 %}#10b981{% elif session.score >= 50 %}#f59e0b{% else %}#ef4444{% endif %};">{{ session.score }} pts</span>
+                           
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div style="text-align: center; padding: 3rem 1rem;">
+                        <div style="width: 56px; height: 56px; margin: 0 auto 1rem; background: #f1f5f9; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="clipboard-list" style="color: #cbd5e1;" size="24"></i>
+                        </div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem; margin-bottom: 0.25rem;">No activity yet</div>
+                        <div style="font-size: 0.75rem; color: #94a3b8;">Take your first challenge to see results here.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if recent_sessions %}
+                <a href="{% url 'home:tests_list' %}" style="display: block; text-align: center; margin-top: 1rem; padding: 0.6rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.75rem; font-weight: 700; color: #3b82f6; text-decoration: none;">
+                    View All Challenges →
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Tasks / Goals (middle) -->
+            <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800; color: #1a1a2e; margin: 0;">Goals</h3>
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #8892b0;">This Week</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0;">
+                    <!-- Goal items -->
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0; border-bottom: 1px solid #f1f5f9;">
+                        <div style="width: 28px; height: 28px; border-radius: 10px; background: #ecfdf5; border: 2px solid #a7f3d0; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="check" style="color: #10b981;" size="13"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: #94a3b8; text-decoration: line-through;">Create your account</div>
+                        </div>
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 0.2rem 0.5rem; border-radius: 6px;">Done</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0; border-bottom: 1px solid #f1f5f9;">
+                        <div style="width: 28px; height: 28px; border-radius: 10px; background: {% if total_tests > 0 %}#ecfdf5; border: 2px solid #a7f3d0{% else %}#fff7ed; border: 2px solid #fed7aa{% endif %}; display: flex; align-items: center; justify-content: center;">
+                            {% if total_tests > 0 %}<i data-lucide="check" style="color: #10b981;" size="13"></i>{% else %}<div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;"></div>{% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.8rem; font-weight: {% if total_tests > 0 %}600; color: #94a3b8; text-decoration: line-through{% else %}700; color: #1e293b{% endif %};">Complete your first test</div>
+                        </div>
+                        {% if total_tests > 0 %}
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 0.2rem 0.5rem; border-radius: 6px;">Done</span>
+                        {% else %}
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #f59e0b; background: #fff7ed; padding: 0.2rem 0.5rem; border-radius: 6px;">Pending</span>
+                        {% endif %}
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0; border-bottom: 1px solid #f1f5f9;">
+                        <div style="width: 28px; height: 28px; border-radius: 10px; background: {% if total_tests >= 5 %}#ecfdf5; border: 2px solid #a7f3d0{% else %}#fff7ed; border: 2px solid #fed7aa{% endif %}; display: flex; align-items: center; justify-content: center;">
+                            {% if total_tests >= 5 %}<i data-lucide="check" style="color: #10b981;" size="13"></i>{% else %}<div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;"></div>{% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: #1e293b;">Complete 5 challenges</div>
+                            <div style="font-size: 0.6rem; color: #94a3b8;">{{ total_tests }}/5 completed</div>
+                        </div>
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #3b82f6; background: #eff6ff; padding: 0.2rem 0.5rem; border-radius: 6px;">{{ total_tests }}/5</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0; border-bottom: 1px solid #f1f5f9;">
+                        <div style="width: 28px; height: 28px; border-radius: 10px; background: {% if high_score_achieved %}#ecfdf5; border: 2px solid #a7f3d0{% else %}#fff7ed; border: 2px solid #fed7aa{% endif %}; display: flex; align-items: center; justify-content: center;">
+                            {% if high_score_achieved %}
+                            <i data-lucide="check" style="color: #10b981;" size="13"></i>
+                            {% else %}
+                            <div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;"></div>
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.8rem; font-weight: {% if high_score_achieved %}600; color: #94a3b8; text-decoration: line-through{% else %}700; color: #1e293b{% endif %};">Score above 80% on a test</div>
+                        </div>
+                        {% if high_score_achieved %}
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 0.2rem 0.5rem; border-radius: 6px;">Done</span>
+                        {% else %}
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #f59e0b; background: #fff7ed; padding: 0.2rem 0.5rem; border-radius: 6px;">Pending</span>
+                        {% endif %}
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0;" onclick="document.getElementById('profileModal').style.display='flex'" role="button" tabindex="0">
+                        <div style="width: 28px; height: 28px; border-radius: 10px; background: {% if user.personalprofile.phone %}#ecfdf5; border: 2px solid #a7f3d0{% else %}#fff7ed; border: 2px solid #fed7aa{% endif %}; display: flex; align-items: center; justify-content: center;">
+                            {% if user.personalprofile.phone %}<i data-lucide="check" style="color: #10b981;" size="13"></i>{% else %}<div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%;"></div>{% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: {% if user.personalprofile.phone %}#94a3b8{% else %}#3b82f6{% endif %}; {% if user.personalprofile.phone %}text-decoration: line-through{% endif %}; cursor: pointer;">Add phone & location</div>
+                        </div>
+                        {% if user.personalprofile.phone %}
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 0.2rem 0.5rem; border-radius: 6px;">Done</span>
+                        {% else %}
+                        <span style="font-size: 0.6rem; font-weight: 700; color: #3b82f6; background: #eff6ff; padding: 0.2rem 0.5rem; border-radius: 6px; cursor: pointer;">Update</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Profile Card -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Profile Summary -->
+                <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; position: relative; overflow: hidden;">
+                    <!-- Decorative element -->
+                    <div style="position: absolute; top: -30px; left: -30px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(233,69,96,0.15) 0%, rgba(233,69,96,0) 70%); border-radius: 50%;"></div>
+                    
+                    <div style="width: 64px; height: 64px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, #e94560, #c81d4e); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.25rem; box-shadow: 0 4px 15px rgba(233,69,96,0.3); position: relative; z-index: 1;">
+                        {{ user.personalprofile.first_name|slice:":1" }}{{ user.personalprofile.last_name|slice:":1" }}
+                    </div>
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; color: #fff; position: relative; z-index: 1;">{{ user.personalprofile.first_name }} {{ user.personalprofile.last_name }}</div>
+                    <div style="font-size: 0.7rem; color: #8892b0; font-weight: 500; margin-top: 0.15rem; position: relative; z-index: 1;">{{ user.email }}</div>
+                    <div style="display: inline-block; margin-top: 0.5rem; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.6rem; border-radius: 6px; position: relative; z-index: 1;">Student</div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.25rem; position: relative; z-index: 1;">
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 0.75rem 0.5rem;">
+                            <div style="font-size: 1.1rem; font-weight: 900; color: #fff;">{{ user.personalprofile.points }}</div>
+                            <div style="font-size: 0.55rem; font-weight: 700; color: #8892b0; text-transform: uppercase;">Points</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 0.75rem 0.5rem;">
+                            <div style="font-size: 1.1rem; font-weight: 900; color: #e94560;">#{{ rank }}</div>
+                            <div style="font-size: 0.55rem; font-weight: 700; color: #8892b0; text-transform: uppercase;">Rank</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Members (if in team) -->
+                {% if team %}
+                <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 800; color: #1a1a2e; margin: 0 0 1rem;">Team Score</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        {% for member in team.members.all %}
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div style="width: 30px; height: 30px; border-radius: 50%; background: {% cycle 'linear-gradient(135deg,#3b82f6,#2563eb)' 'linear-gradient(135deg,#10b981,#059669)' 'linear-gradient(135deg,#f59e0b,#d97706)' 'linear-gradient(135deg,#8b5cf6,#7c3aed)' 'linear-gradient(135deg,#ec4899,#db2777)' %}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 0.6rem;">
+                                {{ member.email|slice:":2"|upper }}
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 0.75rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ member.email }}</div>
+                            </div>
+                            <div style="font-size: 0.75rem; font-weight: 800; color: {% if member.pk == user.pk %}#e94560{% else %}#1e293b{% endif %};">{{ member.personalprofile.points }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- All Completed Challenges Section -->
+        <div style="margin-top: 2rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; overflow: hidden;">
+            <!-- Decorative circle -->
+            <div style="position: absolute; bottom: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0) 70%); border-radius: 50%;"></div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; position: relative; z-index: 1;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0;">Completed Challenges History</h3>
+                <span style="padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3);">
+                    {{ all_sessions.count }} Sessions
+                </span>
+            </div>
+            
+            <div style="overflow-x: auto; position: relative; z-index: 1;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid rgba(255,255,255,0.05); color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                            <th style="padding: 1rem 0.5rem; font-weight: 800;">Challenge</th>
+                            <th style="padding: 1rem 0.5rem; font-weight: 800;">Player</th>
+                            <th style="padding: 1rem 0.5rem; font-weight: 800;">Date completed</th>
+                            <th style="padding: 1rem 0.5rem; font-weight: 800;">Score points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in all_sessions %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'" onclick="window.location.href='{% url 'home:tests_detail' session.test.id %}'">
+                            <td style="padding: 1rem 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(59,130,246,0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(59,130,246,0.2);">
+                                        <i data-lucide="award" style="color: #60a5fa;" size="16"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #f8fafc; font-size: 0.9rem;">{{ session.test.name }}</div>
+                                        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem;">{{ session.test.questions.count }} Questions</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 1rem 0.5rem;">
+                                <div style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700;">
+                                    {{ session.user.personalprofile.first_name }} {{ session.user.personalprofile.last_name }} 
+                                    {% if session.user == user %}<span style="color: #34d399; font-size: 0.7rem; margin-left: 0.3rem;">(You)</span>{% endif %}
+                                </div>
+                            </td>
+                            <td style="padding: 1rem 0.5rem; font-size: 0.85rem; color: #94a3b8; font-weight: 500;">
+                                {{ session.end_time|date:"M d, Y, h:i a" }}
+                            </td>
+                            <td style="padding: 1rem 0.5rem;">
+                                <span style="font-size: 0.85rem; font-weight: 800; color: {% if session.score >= 70 %}#34d399{% elif session.score >= 50 %}#fbbf24{% else %}#f87171{% endif %}; background: {% if session.score >= 70 %}rgba(16,185,129,0.15){% elif session.score >= 50 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.15){% endif %}; padding: 0.3rem 0.6rem; border-radius: 8px; border: 1px solid {% if session.score >= 70 %}rgba(16,185,129,0.3){% elif session.score >= 50 %}rgba(245,158,11,0.3){% else %}rgba(239,68,68,0.3){% endif %};">
+                                    {{ session.score }} pts
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="padding: 3rem 1rem; text-align: center;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; border: 1px solid rgba(255,255,255,0.1);">
+                                    <i data-lucide="history" style="color: #64748b;" size="24"></i>
+                                </div>
+                                <div style="color: #cbd5e1; font-size: 0.9rem; font-weight: 700;">No history available</div>
+                                <div style="color: #64748b; font-size: 0.75rem; margin-top: 0.25rem;">Complete challenges to see them listed here.</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ═══════════ PROFILE MODAL ═══════════ -->
+<div id="profileModal" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(15,15,30,0.6); backdrop-filter: blur(6px);" onclick="if(event.target===this) this.style.display='none'">
+    <div style="background: #fff; border: 2px solid #e2e8f0; border-radius: 24px; width: 100%; max-width: 460px; box-shadow: 0 25px 60px rgba(0,0,0,0.2); overflow: hidden; animation: modalIn 0.3s ease;">
+        <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Complete Your Profile</h3>
+                <p style="font-size: 0.75rem; color: #8892b0; margin: 0.25rem 0 0;">Add your phone number and location</p>
+            </div>
+            <div onclick="document.getElementById('profileModal').style.display='none'" style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <i data-lucide="x" style="color: #fff;" size="18"></i>
+            </div>
+        </div>
+        <form id="profileForm" method="POST" action="{% url 'users:update_profile' %}" style="padding: 2rem;">
+            {% csrf_token %}
+            <div id="modalSuccess" style="display: none; background: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 14px; padding: 1rem; margin-bottom: 1.5rem; color: #065f46; font-weight: 700; font-size: 0.85rem; text-align: center;">Profile updated!</div>
+            <div id="modalError" style="display: none; background: #fef2f2; border: 2px solid #fecaca; border-radius: 14px; padding: 1rem; margin-bottom: 1.5rem; color: #991b1b; font-weight: 700; font-size: 0.85rem; text-align: center;"></div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">Phone Number</label>
+                <input type="tel" name="phone" placeholder="e.g. 0712 345 678" value="{{ user.personalprofile.phone }}" style="width: 100%; padding: 0.9rem 1rem; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; font-weight: 600; color: #1e293b; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">Location</label>
+                <input type="text" name="location" placeholder="e.g. Nairobi, Kenya" value="{{ user.personalprofile.location }}" style="width: 100%; padding: 0.9rem 1rem; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 0.95rem; font-weight: 600; color: #1e293b; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" onclick="document.getElementById('profileModal').style.display='none'" style="flex: 1; padding: 0.85rem; border: 2px solid #e2e8f0; border-radius: 14px; background: #fff; font-weight: 700; color: #64748b; cursor: pointer; font-size: 0.9rem;">Cancel</button>
+                <button type="submit" id="saveBtn" style="flex: 2; padding: 0.85rem; border: none; border-radius: 14px; background: linear-gradient(135deg, #e94560, #c81d4e); font-weight: 700; color: #fff; cursor: pointer; font-size: 0.9rem;">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+<script>
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this, btn = document.getElementById('saveBtn');
+    const s = document.getElementById('modalSuccess'), err = document.getElementById('modalError');
+    btn.textContent = 'Saving...'; btn.disabled = true; s.style.display = 'none'; err.style.display = 'none';
+    fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+    .then(r => r.json()).then(d => {
+        btn.textContent = 'Save'; btn.disabled = false;
+        if (d.success) { s.style.display = 'block'; setTimeout(() => location.reload(), 1200); }
+        else { err.textContent = d.error || 'Error'; err.style.display = 'block'; }
+    }).catch(() => { btn.textContent = 'Save'; btn.disabled = false; err.textContent = 'Network error.'; err.style.display = 'block'; });
+});
+</script>
+{% endblock %}

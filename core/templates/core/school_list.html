@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Member Institutions | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="py-20 px-[5%] lg:px-[10%]">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-20 animate-in fade-in slide-in-from-top-8 duration-700">
+            <h1 class="font-outfit text-5xl font-extrabold text-dark tracking-tight mb-4">Member Schools</h1>
+            <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Discover the elite institutions
+                participating in the national league.</p>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {% for school in schools %}
+            <div
+                class="group bg-white rounded-[2.5rem] border-2 border-green-500/30 overflow-hidden shadow-xl shadow-slate-200/50 hover:-translate-y-3 hover:border-green-500/70 hover:shadow-green-500/20 transition-all duration-500">
+                <div class="h-56 bg-slate-50 flex items-center justify-center p-12 relative overflow-hidden">
+                    {% if school.logo %}
+                    <img src="{{ school.logo.url }}" alt="{{ school.name }}"
+                        class="max-w-full max-h-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-700">
+                    {% else %}
+                    <div
+                        class="w-20 h-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center relative z-10">
+                        <i data-lucide="school" size="40"></i>
+                    </div>
+                    {% endif %}
+                    <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent"></div>
+                </div>
+
+                <div class="p-8 space-y-6">
+                    <div>
+                        <h3 class="font-outfit text-2xl font-bold text-dark mb-3 line-clamp-1 capitalize">{{ school.name
+                            }}</h3>
+                        <div class="flex items-center gap-2 text-slate-400 font-semibold text-sm">
+                            <i data-lucide="map-pin" size="14"></i>
+                            {{ school.city }}, {{ school.country }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-slate-500 font-medium text-sm">
+                        <i data-lucide="globe" size="14"></i>
+                        {% if school.website %}
+                        <span class="truncate">{{ school.website }}</span>
+                        {% else %}
+                        No website listed
+                        {% endif %}
+                    </div>
+
+                    <a href="{% url 'core:school_detail' school.pk %}"
+                        class="btn btn-outline justify-center w-full py-4 text-primary border-primary/10 hover:bg-primary/5 group-hover:border-primary">
+                        View Institution Profile
+                        <i data-lucide="arrow-right" size="16"></i>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div
+                class="col-span-full py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-6">
+                    <i data-lucide="school" size="40"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-400">No schools onboarded yet.</h2>
+                <p class="text-slate-400 font-medium mt-2">Check back later or register your school now.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if user.is_superuser %}
+<a href="{% url 'core:school_add' %}"
+    class="fixed bottom-10 right-10 btn btn-primary py-4 px-8 rounded-full shadow-2xl shadow-primary/40 z-50">
+    <i data-lucide="plus"></i>
+    Add New School
+</a>
+{% endif %}
+{% endblock %}
