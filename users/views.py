@@ -74,7 +74,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context = super().get_context_data(**kwargs)
         profile = self.request.user.personalprofile
         
-        # Rank calculation Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa
+        # Rank calculation
         all_profiles = PersonalProfile.objects.all().order_by('-points')
         rank = 1
         for p in all_profiles:
@@ -87,7 +87,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         team = Teams.objects.filter(members=self.request.user).first()
         context['team'] = team
         
-        # Tests and scores Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa
+        # Tests and scores
         from django.db.models import Q
         if team:
             sessions = TestSession.objects.filter(Q(user=self.request.user) | Q(team=team)).order_by('-end_time')
@@ -102,7 +102,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         # Check if student has scored >= 80% on any test
         context['high_score_achieved'] = any(s.score >= 80 for s in sessions)
         
-        # School rank Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa Hausa
+        # School rank
         if self.request.user.school:
             all_schools = Schools.objects.annotate(total_points=Sum('teams__points')).order_by('-total_points')
             s_rank = 1
