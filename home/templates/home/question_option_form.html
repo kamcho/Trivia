@@ -12,10 +12,60 @@
             <p class="text-slate-500 font-medium">Add an option for the previously created question.</p>
         </div>
 
+        {% if existing_options %}
+        <div class="mb-10 space-y-4">
+            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <i data-lucide="list" size="14"></i>
+                Already Added Options
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {% for opt in existing_options %}
+                <div
+                    class="flex items-center justify-between p-3 rounded-xl border {% if opt.is_correct %} border-primary/20 bg-primary/5 {% else %} border-slate-100 bg-slate-50/30 {% endif %}">
+                    <span
+                        class="text-sm font-bold {% if opt.is_correct %} text-primary {% else %} text-slate-600 {% endif %}">{{  opt.option_text }}</span>
+                    {% if opt.is_correct %}
+                    <i data-lucide="check-circle-2" size="14" class="text-primary"></i>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if question_obj %}
+        <div class="mb-10 p-8 bg-slate-50 rounded-[2rem] border border-slate-100 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-5">
+                <i data-lucide="quote" size="80"></i>
+            </div>
+            <div class="relative">
+                <h3 class="text-[10px] font-black uppercase tracking-widest text-primary mb-3">Target Question</h3>
+                <p class="font-outfit text-xl font-bold text-dark leading-relaxed">
+                    {{ question_obj.question_text }}
+                </p>
+                <div class="mt-4 flex items-center gap-4">
+                    <div
+                        class="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <i data-lucide="tag" size="12"></i>
+                        {{ question_obj.get_question_type_display }}
+                    </div>
+                    <div
+                        class="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <i data-lucide="zap" size="12"></i>
+                        {{ question_obj.score }} XP
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <form method="post" class="space-y-6">
             {% csrf_token %}
 
             {% for field in form %}
+            {% if field.name == 'question' and question_id %}
+            <div class="hidden">{{ field }}</div>
+            {% else %}
             <div class="space-y-2">
                 {% if field.field.widget.input_type == 'checkbox' %}
                 <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
@@ -42,6 +92,7 @@
                 </ul>
                 {% endif %}
             </div>
+            {% endif %}
             {% endfor %}
 
             <div class="pt-6 grid grid-cols-2 gap-4">

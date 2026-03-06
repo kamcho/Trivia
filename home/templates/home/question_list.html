@@ -114,6 +114,11 @@
                     </div>
                     {% if user.is_superuser %}
                     <div class="flex items-center gap-4">
+                        <a href="{% url 'home:question_option_add' %}?question_id={{ question.id }}"
+                            class="text-[10px] font-black text-primary hover:text-primary transition-colors uppercase tracking-widest flex items-center gap-1">
+                            <i data-lucide="plus-circle" size="12"></i>
+                            Add Option
+                        </a>
                         <a href="#"
                             class="text-[10px] font-black text-slate-300 hover:text-primary transition-colors uppercase tracking-widest">Edit
                             Question</a>

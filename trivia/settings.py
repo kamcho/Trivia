@@ -140,3 +140,4 @@ STATIC_URL = 'static/'
 
 LOGIN_REDIRECT_URL = 'home:index'
 LOGOUT_REDIRECT_URL = 'home:index'
+LOGIN_URL = '/users/login/'

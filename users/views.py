@@ -60,6 +60,7 @@ class UserRegistrationView(CreateView):
 class UserLogoutView(LogoutView):
     next_page = 'index'
 class DashboardView(LoginRequiredMixin, TemplateView):
+    login_url = '/users/login/'
     def get(self, request, *args, **kwargs):
         if request.user.role == 'admin' or request.user.is_superuser:
             return redirect('users:admin_dashboard')
@@ -70,6 +71,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return redirect('home:index')
 
 class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    login_url = '/users/login/'
     template_name = 'users/student_dashboard.html'
 
     def test_func(self):
@@ -120,6 +122,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         return context
 
 class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    login_url = '/users/login/'
     template_name = 'users/admin_dashboard.html'
 
     def test_func(self):
@@ -155,6 +158,7 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return context
 
 class PatronDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    login_url = '/users/login/'
     template_name = 'users/patron_dashboard.html'
 
     def test_func(self):

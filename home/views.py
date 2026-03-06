@@ -125,28 +125,54 @@ class QuestionCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView)
         return context
 
     def post(self, request, *args, **kwargs):
+        self.object = None
         form = self.get_form()
         if form.is_valid():
-            question = form.save()
+            self.object = form.save()
             # Handle image uploads
             images = request.FILES.getlist('image')
             captions = request.POST.getlist('caption')
             orders = request.POST.getlist('order')
             for i, img in enumerate(images):
                 QuestionImage.objects.create(
-                    question=question,
+                    question=self.object,
                     image=img,
                     caption=captions[i] if i < len(captions) else '',
                     order=int(orders[i]) if i < len(orders) and orders[i] else 0
                 )
-            return redirect(self.success_url)
+            return redirect(self.get_success_url())
         return self.form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('home:question_option_add') + f'?question_id={self.object.pk}'
 
 class QuestionOptionCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = QuestionOption
     form_class = QuestionOptionForm
     template_name = 'home/question_option_form.html'
     success_url = reverse_lazy('home:question_option_add')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        question_id = self.request.GET.get('question_id')
+        if question_id:
+            initial['question'] = question_id
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        question_id = self.request.GET.get('question_id')
+        context['question_id'] = question_id
+        if question_id:
+            context['question_obj'] = get_object_or_404(Question, id=question_id)
+            context['existing_options'] = QuestionOption.objects.filter(question_id=question_id)
+        return context
+
+    def get_success_url(self):
+        question_id = self.request.GET.get('question_id')
+        if question_id:
+            return reverse_lazy('home:question_option_add') + f'?question_id={question_id}'
+        return self.success_url
 
 class TestsCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Tests
