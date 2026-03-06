@@ -46,6 +46,10 @@ class Question(models.Model):
     metadata = models.JSONField(null=True, blank=True)
     time = models.IntegerField()
     score = models.IntegerField()
+    min_age = models.IntegerField(null=True, blank=True, help_text='Minimum recommended age')
+    max_age = models.IntegerField(null=True, blank=True, help_text='Maximum recommended age')
+    min_grade = models.IntegerField(null=True, blank=True, help_text='Minimum recommended grade')
+    max_grade = models.IntegerField(null=True, blank=True, help_text='Maximum recommended grade')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -87,6 +91,10 @@ class Tests(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     questions = models.ManyToManyField(Question, related_name='questions')
     time = models.IntegerField()
+    min_age = models.IntegerField(null=True, blank=True, help_text='Minimum recommended age')
+    max_age = models.IntegerField(null=True, blank=True, help_text='Maximum recommended age')
+    min_grade = models.IntegerField(null=True, blank=True, help_text='Minimum recommended grade')
+    max_grade = models.IntegerField(null=True, blank=True, help_text='Maximum recommended grade')  
     def __str__(self):
         return self.name
 

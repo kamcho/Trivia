@@ -10,8 +10,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomAuthenticationForm, UserRegistrationForm
 from .models import User, PersonalProfile
 from core.models import Schools, Teams
-from home.models import TestSession
-from django.db.models import Sum, Count, Avg
+from home.models import TestSession, Tests
+from django.db.models import Sum, Count, Avg, Max, Min
 
 @login_required
 @require_POST
@@ -35,6 +35,11 @@ class UserRegistrationView(CreateView):
     form_class = UserRegistrationForm
     template_name = 'users/register.html'
     success_url = reverse_lazy('users:dashboard')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('users:dashboard')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -132,6 +137,21 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context['admin_count'] = User.objects.filter(role='admin').count()
         
         context['recent_registrations'] = User.objects.all().order_by('-date_joined')[:10]
+
+        # Test Stats
+        test_stats = Tests.objects.annotate(
+            times_taken=Count('testsession'),
+            avg_score=Avg('testsession__score'),
+            highest_score=Max('testsession__score'),
+            lowest_score=Min('testsession__score'),
+        ).order_by('-times_taken')
+
+        context['test_stats'] = test_stats
+        context['total_sessions'] = TestSession.objects.count()
+        context['overall_avg_score'] = TestSession.objects.aggregate(avg=Avg('score'))['avg'] or 0
+        context['overall_highest_score'] = TestSession.objects.aggregate(mx=Max('score'))['mx'] or 0
+        context['overall_lowest_score'] = TestSession.objects.aggregate(mn=Min('score'))['mn'] or 0
+        context['most_popular_test'] = test_stats.first()
         return context
 
 class PatronDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):

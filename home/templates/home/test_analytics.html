@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ test.name }} — Analytics | KSTL Admin{% endblock %}
+
+{% block content %}
+<div class="py-12 px-[5%] lg:px-[10%] min-h-screen" style="background: #0a0f1e">
+
+    <!-- Back + Header -->
+    <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <a href="{% url 'users:admin_dashboard' %}"
+                class="inline-flex items-center gap-2 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:text-primary transition-colors mb-4">
+                <i data-lucide="arrow-left" size="12"></i> Admin Dashboard
+            </a>
+            <h1 class="font-outfit text-3xl md:text-4xl font-black text-white tracking-tight">{{ test.name }}</h1>
+            <p class="text-slate-500 font-medium mt-1">Test Analytics &amp; Breakdown</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            {% if test.difficulty == 'easy' %}
+                <span class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest" style="background: rgba(16,185,129,0.15); color: #34d399">Easy</span>
+            {% elif test.difficulty == 'medium' %}
+                <span class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest" style="background: rgba(245,158,11,0.15); color: #fbbf24">Medium</span>
+            {% else %}
+                <span class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest" style="background: rgba(239,68,68,0.15); color: #f87171">Hard</span>
+            {% endif %}
+            {% if test.is_active %}
+                <span class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest" style="background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2)">Active</span>
+            {% else %}
+                <span class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest" style="background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid #334155">Inactive</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Overview Stat Cards ─────────────────────────────────── -->
+    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-indigo-400">Total Sessions</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ total_sessions }}</div>
+        </div>
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-emerald-400">Avg Score</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ avg_pct }}%</div>
+            <div class="text-xs text-slate-500">{{ avg_score }} / {{ total_possible }} pts</div>
+        </div>
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-amber-400">Highest Score</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ highest_pct }}%</div>
+            <div class="text-xs text-slate-500">{{ highest_score }} pts</div>
+        </div>
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-red-400">Lowest Score</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ lowest_pct }}%</div>
+            <div class="text-xs text-slate-500">{{ lowest_score }} pts</div>
+        </div>
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-violet-400">Participants</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ unique_participants }}</div>
+        </div>
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.2)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-sky-400">Questions</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ test.questions.count }}</div>
+        </div>
+        <div class="col-span-1 p-6 rounded-3xl flex flex-col gap-2" style="background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2)">
+            <div class="text-[10px] font-black uppercase tracking-widest text-rose-400">Duration</div>
+            <div class="text-3xl font-black text-white font-outfit">{{ test.time }}<span class="text-sm text-slate-500">m</span></div>
+        </div>
+    </div>
+
+    <!-- ── Score Distribution + Top Scorers ────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+        <!-- Score Distribution -->
+        <div class="p-8 rounded-[2.5rem]" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
+            <h3 class="font-outfit text-xl font-black text-white mb-8">Score Distribution</h3>
+            <div class="space-y-5">
+                {% with labels="0–20%,21–40%,41–60%,61–80%,81–100%" %}
+                {% for bucket_count in buckets %}
+                {% with idx=forloop.counter0 %}
+                <div class="flex items-center gap-4">
+                    <div class="text-[10px] font-black text-slate-500 uppercase w-16 shrink-0">
+                        {% if idx == 0 %}0–20%
+                        {% elif idx == 1 %}21–40%
+                        {% elif idx == 2 %}41–60%
+                        {% elif idx == 3 %}61–80%
+                        {% else %}81–100%{% endif %}
+                    </div>
+                    <div class="flex-1 h-6 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.05)">
+                        {% if total_sessions > 0 %}
+                        <div class="h-full rounded-full transition-all"
+                            style="width: {% widthratio bucket_count total_sessions 100 %}%;
+                            background: {% if idx == 0 %}#ef4444{% elif idx == 1 %}#f97316{% elif idx == 2 %}#eab308{% elif idx == 3 %}#22c55e{% else %}#6366f1{% endif %}">
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="text-sm font-black text-white w-6 text-right shrink-0">{{ bucket_count }}</div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Top Scorers -->
+        <div class="p-8 rounded-[2.5rem]" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
+            <h3 class="font-outfit text-xl font-black text-white mb-8">Top Scorers</h3>
+            {% if top_scorers %}
+            <div class="space-y-4">
+                {% for s in top_scorers %}
+                <div class="flex items-center gap-4 p-4 rounded-2xl" style="background: rgba(255,255,255,0.03)">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shrink-0
+                        {% if forloop.counter == 1 %}text-amber-400{% elif forloop.counter == 2 %}text-slate-300{% elif forloop.counter == 3 %}text-orange-400{% else %}text-slate-500{% endif %}"
+                        style="background: rgba(255,255,255,0.07)">
+                        {{ forloop.counter }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-slate-200 truncate">{{ s.user.email }}</p>
+                        {% if s.team %}<p class="text-[10px] text-slate-500 uppercase tracking-widest">{{ s.team.name }}</p>{% endif %}
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="font-black text-white">{{ s.score }} pts</div>
+                        <div class="text-[10px] text-slate-500">{% widthratio s.score total_possible 100 %}%</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-slate-500 text-center py-12 font-medium">No sessions recorded yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Per-Question Accuracy ───────────────────────────────── -->
+    <div class="p-8 rounded-[2.5rem] mb-8" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
+        <h3 class="font-outfit text-xl font-black text-white mb-8">Question Accuracy <span class="text-slate-500 font-medium text-sm">(sorted hardest first)</span></h3>
+        {% if question_stats %}
+        <div class="space-y-5">
+            {% for stat in question_stats %}
+            <div class="rounded-2xl p-5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05)">
+                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-slate-200 text-sm leading-relaxed">{{ forloop.counter }}. {{ stat.question.question_text|truncatechars:120 }}</p>
+                        <div class="flex flex-wrap gap-3 mt-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full
+                                {% if stat.question.difficulty == 'easy' %}text-emerald-400{% elif stat.question.difficulty == 'medium' %}text-amber-400{% else %}text-red-400{% endif %}"
+                                style="background: rgba(255,255,255,0.06)">
+                                {{ stat.question.get_difficulty_display }}
+                            </span>
+                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full text-slate-400" style="background: rgba(255,255,255,0.06)">
+                                {{ stat.question.score }} pts
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-6 shrink-0">
+                        <div class="text-center">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-500">Attempts</div>
+                            <div class="text-xl font-black text-white">{{ stat.attempts }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-500">Correct</div>
+                            <div class="text-xl font-black text-emerald-400">{{ stat.correct }}</div>
+                        </div>
+                        <div class="text-center min-w-[64px]">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-500">Accuracy</div>
+                            <div class="text-xl font-black
+                                {% if stat.accuracy >= 70 %}text-emerald-400
+                                {% elif stat.accuracy >= 40 %}text-amber-400
+                                {% else %}text-red-400{% endif %}">
+                                {{ stat.accuracy }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Accuracy bar -->
+                <div class="mt-4 h-2 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.06)">
+                    <div class="h-full rounded-full transition-all
+                        {% if stat.accuracy >= 70 %}bg-emerald-500
+                        {% elif stat.accuracy >= 40 %}bg-amber-500
+                        {% else %}bg-red-500{% endif %}"
+                        style="width: {{ stat.accuracy }}%">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-slate-500 text-center py-12 font-medium">No questions attached to this test.</p>
+        {% endif %}
+    </div>
+
+    <!-- ── Recent Sessions Table ───────────────────────────────── -->
+    <div class="p-8 rounded-[2.5rem]" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
+        <h3 class="font-outfit text-xl font-black text-white mb-8">Recent Sessions <span class="text-slate-500 font-medium text-sm">(latest 20)</span></h3>
+        {% if session_rows %}
+        <div class="overflow-x-auto rounded-2xl" style="border: 1px solid rgba(255,255,255,0.05)">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.04)">
+                        <th class="text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Participant</th>
+                        <th class="text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Team</th>
+                        <th class="text-center px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Score</th>
+                        <th class="text-center px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Percentage</th>
+                        <th class="text-center px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Duration</th>
+                        <th class="text-center px-5 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Completed</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/50">
+                    {% for row in session_rows %}
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-5 py-4 font-bold text-slate-200">{{ row.session.user.email }}</td>
+                        <td class="px-5 py-4 text-slate-500 font-medium">{{ row.session.team.name|default:"—" }}</td>
+                        <td class="px-5 py-4 text-center font-black text-white">{{ row.session.score }} / {{ total_possible }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <span class="font-black
+                                {% if row.pct >= 70 %}text-emerald-400
+                                {% elif row.pct >= 40 %}text-amber-400
+                                {% else %}text-red-400{% endif %}">
+                                {{ row.pct }}%
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-center text-slate-400 font-medium">{{ row.session.duration_display }}</td>
+                        <td class="px-5 py-4 text-center text-slate-500 text-xs">{{ row.session.end_time|date:"d M Y, H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-slate-500 text-center py-12 font-medium">No completed sessions yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

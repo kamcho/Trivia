@@ -15,4 +15,7 @@ urlpatterns = [
     path('questions/', views.QuestionListView.as_view(), name='question_list'),
     path('tests/<int:pk>/take/', views.TakeTestView.as_view(), name='take_test'),
     path('sessions/<int:pk>/result/', views.TestResultView.as_view(), name='test_result'),
+    path('tests/<int:pk>/analytics/', views.TestAnalyticsView.as_view(), name='test_analytics'),
+    path('chat/', views.ai_chat, name='ai_chat'),
+    path('pricing/', views.pricing, name='pricing'),
 ]

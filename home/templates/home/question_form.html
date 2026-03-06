@@ -16,6 +16,7 @@
             {% csrf_token %}
 
             {% for field in form %}
+            {% if not field.name == 'min_age' and not field.name == 'max_age' and not field.name == 'min_grade' and not field.name == 'max_grade' %}
             <div class="space-y-2">
                 <label for="{{ field.id_for_label }}" class="form-label">
                     {{ field.label }}
@@ -36,7 +37,30 @@
                 </ul>
                 {% endif %}
             </div>
+            {% endif %}
             {% endfor %}
+            
+            <!-- Age & Grade Eligibility -->
+            <div class="border-t border-slate-100 pt-4">
+                <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                    <i data-lucide="sliders" size="14"></i> Age &amp; Grade Eligibility <span
+                        class="font-normal text-slate-300">(optional)</span>
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    {% for field in form %}
+                    {% if field.name == 'min_age' or field.name == 'max_age' or field.name == 'min_grade' or field.name ==
+                    'max_grade' %}
+                    <div class="space-y-2">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <ul class="text-secondary text-xs font-bold">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                </div>
 
             <!-- Image Upload Section -->
             <div class="space-y-3 border-t border-slate-100 pt-6">

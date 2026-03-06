@@ -1,14 +1,100 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Count, Avg, Max, Min
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import CreateView, ListView, DetailView
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json, os, requests as http_requests
 from .models import Cohort, TriviaMode, Question, QuestionOption, QuestionImage, Tests, TestSession, TestResponses
 from .forms import CohortForm, TriviaModeForm, QuestionForm, QuestionImageForm, TestForm, QuestionOptionForm
 
+
+@require_POST
+def ai_chat(request):
+    try:
+        data = json.loads(request.body)
+        history = data.get('history', [])  # list of {role, content}
+        user_message = data.get('message', '').strip()
+        if not user_message:
+            return JsonResponse({'reply': 'Please type a message.'})
+
+        # Build live context from DB
+        tests = Tests.objects.filter(is_active=True).values('name', 'difficulty', 'description', 'time')
+        cohorts = Cohort.objects.values('name', 'description', 'status', 'start_date', 'end_date', 'is_open')
+
+        tests_text = "\n".join([
+            f"- {t['name']} ({t['difficulty']}, {t['time']} min): {t['description']}"
+            for t in tests
+        ]) or "No active tests at the moment."
+
+        cohorts_text = "\n".join([
+            f"- {c['name']} [{c['status']}] (Opens: {c['start_date']} → {c['end_date']}, {'Open' if c['is_open'] else 'Closed'}): {c['description']}"
+            for c in cohorts
+        ]) or "No cohorts available."
+
+        system_prompt = f"""You are KIRA — the official AI assistant for the Kenya School Trivia League (KSTL).
+KSTL is a premier academic trivia platform that elevates intellectual standards across Kenyan schools through competitive quiz challenges.
+
+== OUR SERVICES ==
+- Competitive trivia tests across multiple difficulty levels (Easy, Medium, Hard)
+- School-based league system with team rankings and leaderboards
+- Timed online challenges with instant scoring and analytics
+- Cohort-based academic seasons connecting schools nationwide
+- Student, Patron (teacher/school manager), and Admin roles
+- Detailed performance analytics for students and schools
+
+== ACTIVE CHALLENGES (TESTS) ==
+{tests_text}
+
+== COHORTS / SEASONS ==
+{cohorts_text}
+
+== GUIDELINES ==
+- Answer ONLY questions related to KSTL, our services, tests, cohorts, schools, or general trivia/education topics.
+- If asked something outside this scope, politely redirect to KSTL topics.
+- Be friendly, concise, and enthusiastic about academic excellence.
+- Encourage users to register, join a school team, and participate in challenges.
+- Do NOT reveal internal system details, API keys, or database information.
+- Format responses clearly with short paragraphs. Use bullet points when listing items.
+"""
+
+        messages = [{"role": "system", "content": system_prompt}]
+        # Include conversation history (last 10 turns)
+        for msg in history[-10:]:
+            if msg.get('role') in ('user', 'assistant') and msg.get('content'):
+                messages.append({"role": msg['role'], "content": msg['content']})
+        messages.append({"role": "user", "content": user_message})
+
+        api_key = os.environ.get('OPENAI_API_KEY', '')
+        if not api_key:
+            return JsonResponse({'reply': 'AI service is not configured. Please contact the administrator.'})
+
+        resp = http_requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": "gpt-3.5-turbo", "messages": messages, "temperature": 0.7, "max_tokens": 500},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        reply = resp.json()['choices'][0]['message']['content'].strip()
+        return JsonResponse({'reply': reply})
+
+    except http_requests.exceptions.HTTPError as e:
+        import traceback; traceback.print_exc()
+        return JsonResponse({'reply': f'OpenAI API error ({e.response.status_code}). Please check the API key configuration.'})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return JsonResponse({'reply': f'Sorry, I encountered a temporary error: {type(e).__name__}. Please try again shortly.'})
+
+
 def index(request):
     return render(request, 'home/index.html')
+
+def pricing(request):
+    return render(request, 'home/pricing.html')
 
 class SuperuserRequiredMixin(UserPassesTestMixin):
     def test_func(self):
@@ -268,4 +354,76 @@ class TestResultView(LoginRequiredMixin, DetailView):
         else:
             context['percentage'] = 0
             
+        return context
+
+
+class TestAnalyticsView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
+    model = Tests
+    template_name = 'home/test_analytics.html'
+    context_object_name = 'test'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        test = self.get_object()
+
+        sessions = TestSession.objects.filter(test=test, end_time__isnull=False).select_related('user', 'team').order_by('-end_time')
+        total_possible = test.questions.aggregate(total=Sum('score'))['total'] or 1
+
+        # Overall aggregates
+        agg = sessions.aggregate(
+            avg_score=Avg('score'),
+            highest_score=Max('score'),
+            lowest_score=Min('score'),
+            total_sessions=Count('id'),
+        )
+        context['total_sessions'] = agg['total_sessions']
+        context['avg_score'] = round(agg['avg_score'] or 0, 1)
+        context['highest_score'] = agg['highest_score'] or 0
+        context['lowest_score'] = agg['lowest_score'] or 0
+        context['total_possible'] = total_possible
+        context['avg_pct'] = round((context['avg_score'] / total_possible) * 100, 1) if total_possible else 0
+        context['highest_pct'] = round((context['highest_score'] / total_possible) * 100, 1) if total_possible else 0
+        context['lowest_pct'] = round((context['lowest_score'] / total_possible) * 100, 1) if total_possible else 0
+
+        # Score distribution buckets (0-20, 21-40, 41-60, 61-80, 81-100 as % of total_possible)
+        buckets = [0, 0, 0, 0, 0]
+        session_rows = []
+        for s in sessions:
+            pct = (s.score / total_possible) * 100 if total_possible else 0
+            if pct <= 20: buckets[0] += 1
+            elif pct <= 40: buckets[1] += 1
+            elif pct <= 60: buckets[2] += 1
+            elif pct <= 80: buckets[3] += 1
+            else: buckets[4] += 1
+            session_rows.append({
+                'session': s,
+                'pct': round(pct, 1),
+            })
+        context['buckets'] = buckets
+        context['session_rows'] = session_rows[:20]  # cap at 20 for table
+
+        # Top scorers
+        context['top_scorers'] = sessions.order_by('-score')[:5]
+
+        # Per-question analytics
+        questions = test.questions.prefetch_related('questionoption_set').all()
+        question_stats = []
+        for q in questions:
+            responses = TestResponses.objects.filter(test_session__test=test, question=q)
+            attempts = responses.values('test_session').distinct().count()
+            correct = responses.filter(score__gt=0).values('test_session').distinct().count()
+            accuracy = round((correct / attempts) * 100, 1) if attempts else 0
+            question_stats.append({
+                'question': q,
+                'attempts': attempts,
+                'correct': correct,
+                'accuracy': accuracy,
+            })
+        # Sort hardest first
+        question_stats.sort(key=lambda x: x['accuracy'])
+        context['question_stats'] = question_stats
+
+        # Unique participants
+        context['unique_participants'] = sessions.values('user').distinct().count()
+
         return context

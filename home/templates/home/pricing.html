@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pricing | Kenya School Trivia League{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background:linear-gradient(180deg,#0a0f1e 0%,#0f172a 60%,#0a0f1e 100%)">
+
+    <!-- ── Hero ───────────────────────────────────────────── -->
+    <div class="text-center py-20 px-[5%]">
+        <span class="inline-block px-5 py-2 rounded-full text-xs font-black uppercase tracking-[.18em] mb-6"
+            style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.25)">
+            Simple, Transparent Pricing
+        </span>
+        <h1 class="font-outfit text-5xl md:text-6xl font-black text-white tracking-tight mb-5">
+            Choose Your
+            <span style="background:linear-gradient(135deg,#006837,#00a859);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                League Tier
+            </span>
+        </h1>
+        <p class="text-slate-400 font-medium text-lg max-w-xl mx-auto">
+            Whether you're a solo learner or an entire school, KSTL has a plan built for intellectual excellence.
+        </p>
+
+        <!-- Toggle -->
+        <div class="mt-10 inline-flex items-center gap-1 p-1 rounded-2xl" style="background:#1e293b;border:1px solid #334155">
+            <button id="tab-individual" onclick="switchTab('individual')"
+                class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider transition-all text-white"
+                style="background:linear-gradient(135deg,#006837,#00a859)">
+                Individual
+            </button>
+            <button id="tab-school" onclick="switchTab('school')"
+                class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider transition-all text-slate-400 hover:text-white">
+                Schools &amp; Teams
+            </button>
+        </div>
+    </div>
+
+    <!-- ── INDIVIDUAL Plans ────────────────────────────────── -->
+    <div id="section-individual" class="px-[5%] pb-20">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Free -->
+            <div class="p-8 rounded-[2rem] flex flex-col gap-6" style="background:#0f172a;border:1px solid #1e293b">
+                <div>
+                    <div class="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Starter</div>
+                    <div class="font-outfit text-4xl font-black text-white">Free</div>
+                    <div class="text-slate-500 text-sm mt-1">Forever, no credit card needed</div>
+                </div>
+                <ul class="space-y-3 flex-1 text-sm text-slate-300">
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Access to free public challenges</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Personal score dashboard</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> National leaderboard visibility</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Basic performance stats</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Single student account</li>
+                </ul>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all"
+                    style="background:#1e293b;color:#94a3b8;border:1px solid #334155">Get Started Free</a>
+                {% else %}
+                <a href="{% url 'users:dashboard' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all"
+                    style="background:#1e293b;color:#4ade80;border:1px solid #334155">Go to Dashboard</a>
+                {% endif %}
+            </div>
+
+            <!-- Scholar — Popular -->
+            <div class="p-8 rounded-[2rem] flex flex-col gap-6 relative"
+                style="background:linear-gradient(160deg,#003d20,#006837);border:2px solid #00a859;box-shadow:0 0 60px rgba(0,104,55,0.3)">
+                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
+                    style="background:linear-gradient(135deg,#006837,#00a859)">Most Popular</div>
+                <div>
+                    <div class="text-xs font-black uppercase tracking-widest text-green-300 mb-2">Scholar</div>
+                    <div class="font-outfit text-4xl font-black text-white">KES 500<span class="text-lg text-green-200 font-medium">/term</span></div>
+                    <div class="text-green-300/70 text-sm mt-1">≈ KES 1,500 per year</div>
+                </div>
+                <ul class="space-y-3 flex-1 text-sm text-green-100">
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Everything in Starter</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Unlimited test attempts</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Detailed question-level analytics</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Performance improvement insights</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Priority access to new challenges</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Badge &amp; achievement system</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Email performance reports</li>
+                </ul>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3)">Enroll as Scholar</a>
+                {% else %}
+                <a href="{% url 'users:dashboard' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3)">Go to Dashboard</a>
+                {% endif %}
+            </div>
+
+            <!-- Elite -->
+            <div class="p-8 rounded-[2rem] flex flex-col gap-6"
+                style="background:linear-gradient(160deg,#1a0a2e,#2d1b4e);border:1px solid rgba(139,92,246,0.4)">
+                <div>
+                    <div class="text-xs font-black uppercase tracking-widest text-violet-400 mb-2">Elite</div>
+                    <div class="font-outfit text-4xl font-black text-white">KES 1,200<span class="text-lg text-violet-300 font-medium">/term</span></div>
+                    <div class="text-violet-400/70 text-sm mt-1">Full competitive access</div>
+                </div>
+                <ul class="space-y-3 flex-1 text-sm text-slate-200">
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> Everything in Scholar</li>
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> AI-powered KIRA coaching sessions</li>
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> Custom learning path recommendations</li>
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> Inter-school challenge invitations</li>
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> Early access to cohort seasons</li>
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> Certificate of excellence</li>
+                    <li class="flex items-center gap-3"><span style="color:#a78bfa">✓</span> Dedicated support channel</li>
+                </ul>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#6d28d9,#7c3aed);border:1px solid rgba(139,92,246,0.5)">Go Elite</a>
+                {% else %}
+                <a href="{% url 'users:dashboard' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#6d28d9,#7c3aed);border:1px solid rgba(139,92,246,0.5)">Go to Dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SCHOOL / TEAM Plans ─────────────────────────────── -->
+    <div id="section-school" class="px-[5%] pb-20 hidden">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Academy -->
+            <div class="p-8 rounded-[2rem] flex flex-col gap-6" style="background:#0f172a;border:1px solid #1e293b">
+                <div>
+                    <div class="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Academy</div>
+                    <div class="font-outfit text-4xl font-black text-white">KES 3,000<span class="text-lg text-slate-400 font-medium">/term</span></div>
+                    <div class="text-slate-500 text-sm mt-1">Up to 30 students · 1 team</div>
+                </div>
+                <ul class="space-y-3 flex-1 text-sm text-slate-300">
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Up to 30 student accounts</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> 1 school team in league</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Patron (teacher) dashboard</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> School leaderboard ranking</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Student results overview</li>
+                    <li class="flex items-center gap-3"><span style="color:#34d399">✓</span> Access to all public tests</li>
+                </ul>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all"
+                    style="background:#1e293b;color:#94a3b8;border:1px solid #334155">Register School</a>
+                {% else %}
+                <a href="{% url 'users:dashboard' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all"
+                    style="background:#1e293b;color:#4ade80;border:1px solid #334155">Go to Dashboard</a>
+                {% endif %}
+            </div>
+
+            <!-- League — Popular -->
+            <div class="p-8 rounded-[2rem] flex flex-col gap-6 relative"
+                style="background:linear-gradient(160deg,#003d20,#006837);border:2px solid #00a859;box-shadow:0 0 60px rgba(0,104,55,0.3)">
+                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
+                    style="background:linear-gradient(135deg,#006837,#00a859)">Most Popular</div>
+                <div>
+                    <div class="text-xs font-black uppercase tracking-widest text-green-300 mb-2">League</div>
+                    <div class="font-outfit text-4xl font-black text-white">KES 7,500<span class="text-lg text-green-200 font-medium">/term</span></div>
+                    <div class="text-green-300/70 text-sm mt-1">Up to 100 students · 3 teams</div>
+                </div>
+                <ul class="space-y-3 flex-1 text-sm text-green-100">
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Everything in Academy</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Up to 100 students</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> 3 competing school teams</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Inter-school private matches</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Full analytics per student &amp; team</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Cohort season participation</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Custom challenge scheduling</li>
+                    <li class="flex items-center gap-3"><span style="color:#4ade80">✓</span> Patron admin controls</li>
+                </ul>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3)">Join the League</a>
+                {% else %}
+                <a href="{% url 'users:dashboard' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3)">Go to Dashboard</a>
+                {% endif %}
+            </div>
+
+            <!-- Championship -->
+            <div class="p-8 rounded-[2rem] flex flex-col gap-6"
+                style="background:linear-gradient(160deg,#1c1000,#2a1a00);border:1px solid rgba(245,158,11,0.35)">
+                <div>
+                    <div class="text-xs font-black uppercase tracking-widest text-amber-400 mb-2">Championship</div>
+                    <div class="font-outfit text-4xl font-black text-white">KES 18,000<span class="text-lg text-amber-300 font-medium">/term</span></div>
+                    <div class="text-amber-400/70 text-sm mt-1">Unlimited students &amp; teams</div>
+                </div>
+                <ul class="space-y-3 flex-1 text-sm text-slate-200">
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> Everything in League</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> Unlimited students &amp; teams</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> Priority cohort season seeding</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> KIRA AI coaching for all students</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> School branding on leaderboard</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> Dedicated account manager</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> Custom test creation support</li>
+                    <li class="flex items-center gap-3"><span style="color:#fbbf24">✓</span> Trophy &amp; certificate program</li>
+                </ul>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'users:register' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#b45309,#d97706);border:1px solid rgba(245,158,11,0.4)">Go Championship</a>
+                {% else %}
+                <a href="{% url 'users:dashboard' %}" class="w-full text-center py-3 rounded-xl font-black text-sm uppercase tracking-wider text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#b45309,#d97706);border:1px solid rgba(245,158,11,0.4)">Go to Dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Feature Comparison Table ───────────────────────── -->
+    <div class="px-[5%] pb-20">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="font-outfit text-3xl font-black text-white text-center mb-12">Full Feature Comparison</h2>
+            <div class="overflow-x-auto rounded-[2rem]" style="border:1px solid #1e293b">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr style="background:rgba(255,255,255,0.04)">
+                            <th class="text-left px-6 py-5 text-slate-400 font-black text-xs uppercase tracking-widest">Feature</th>
+                            <th class="text-center px-4 py-5 text-slate-400 font-black text-xs uppercase tracking-widest">Free</th>
+                            <th class="text-center px-4 py-5 text-green-400 font-black text-xs uppercase tracking-widest">Scholar</th>
+                            <th class="text-center px-4 py-5 text-violet-400 font-black text-xs uppercase tracking-widest">Elite</th>
+                            <th class="text-center px-4 py-5 text-slate-400 font-black text-xs uppercase tracking-widest">Academy</th>
+                            <th class="text-center px-4 py-5 text-green-400 font-black text-xs uppercase tracking-widest">League</th>
+                            <th class="text-center px-4 py-5 text-amber-400 font-black text-xs uppercase tracking-widest">Champ.</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% with y='<span style="color:#4ade80;font-size:16px">✓</span>' n='<span style="color:#334155;font-size:16px">—</span>' %}
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Public challenges</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Unlimited attempts</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Analytics</td>
+                            <td class="px-4 py-4 text-center text-slate-400 text-xs font-bold">Basic</td>
+                            <td class="px-4 py-4 text-center text-slate-400 text-xs font-bold">Full</td>
+                            <td class="px-4 py-4 text-center text-slate-400 text-xs font-bold">Full</td>
+                            <td class="px-4 py-4 text-center text-slate-400 text-xs font-bold">Basic</td>
+                            <td class="px-4 py-4 text-center text-slate-400 text-xs font-bold">Full</td>
+                            <td class="px-4 py-4 text-center text-slate-400 text-xs font-bold">Full</td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">AI KIRA coaching</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Cohort seasons</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Team competition</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Patron dashboard</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Certificate program</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-300">Priority support</td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#334155;font-size:16px">—</span></td>
+                            <td class="px-4 py-4 text-center"><span style="color:#4ade80;font-size:16px">✓</span></td>
+                        </tr>
+                        {% endwith %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── FAQ ───────────────────────────────────────────────── -->
+    <div class="px-[5%] pb-20">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="font-outfit text-3xl font-black text-white text-center mb-12">Frequently Asked Questions</h2>
+            <div class="space-y-3" id="faq">
+
+                <div class="rounded-2xl overflow-hidden" style="border:1px solid #1e293b">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between px-6 py-5 text-left font-bold text-slate-200 hover:text-white transition-colors" style="background:#0f172a">
+                        <span>How do cohort seasons work?</span>
+                        <i data-lucide="chevron-down" size="18" class="text-slate-500 shrink-0 transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-body" style="display:none;background:#0a1628;padding:0 24px 20px;color:#94a3b8;font-size:14px;line-height:1.7">
+                        Cohort seasons are structured academic competition periods where schools and students compete in ranked challenges. Each season has a defined start and end date. Participants accumulate points across multiple tests to determine final rankings and awards.
+                    </div>
+                </div>
+
+                <div class="rounded-2xl overflow-hidden" style="border:1px solid #1e293b">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between px-6 py-5 text-left font-bold text-slate-200 hover:text-white transition-colors" style="background:#0f172a">
+                        <span>Can a school upgrade mid-term?</span>
+                        <i data-lucide="chevron-down" size="18" class="text-slate-500 shrink-0 transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-body" style="display:none;background:#0a1628;padding:0 24px 20px;color:#94a3b8;font-size:14px;line-height:1.7">
+                        Yes! Schools can upgrade their plan at any time. Prorated credits are applied for the remaining term. Contact our support team to facilitate the switch.
+                    </div>
+                </div>
+
+                <div class="rounded-2xl overflow-hidden" style="border:1px solid #1e293b">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between px-6 py-5 text-left font-bold text-slate-200 hover:text-white transition-colors" style="background:#0f172a">
+                        <span>Can individual students join without a school?</span>
+                        <i data-lucide="chevron-down" size="18" class="text-slate-500 shrink-0 transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-body" style="display:none;background:#0a1628;padding:0 24px 20px;color:#94a3b8;font-size:14px;line-height:1.7">
+                        Absolutely. Individual plans (Starter, Scholar, Elite) are fully independent of a school membership. You can participate in national rankings and all open challenges.
+                    </div>
+                </div>
+
+                <div class="rounded-2xl overflow-hidden" style="border:1px solid #1e293b">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between px-6 py-5 text-left font-bold text-slate-200 hover:text-white transition-colors" style="background:#0f172a">
+                        <span>Is there a free trial for schools?</span>
+                        <i data-lucide="chevron-down" size="18" class="text-slate-500 shrink-0 transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-body" style="display:none;background:#0a1628;padding:0 24px 20px;color:#94a3b8;font-size:14px;line-height:1.7">
+                        Schools can access the Academy plan free for one month to evaluate the platform before committing. No credit card required.
+                    </div>
+                </div>
+
+                <div class="rounded-2xl overflow-hidden" style="border:1px solid #1e293b">
+                    <button onclick="toggleFaq(this)" class="w-full flex items-center justify-between px-6 py-5 text-left font-bold text-slate-200 hover:text-white transition-colors" style="background:#0f172a">
+                        <span>What payment methods are accepted?</span>
+                        <i data-lucide="chevron-down" size="18" class="text-slate-500 shrink-0 transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-body" style="display:none;background:#0a1628;padding:0 24px 20px;color:#94a3b8;font-size:14px;line-height:1.7">
+                        We accept M-Pesa, bank transfers, and major credit/debit cards. Invoicing is available for Championship tier institutions.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CTA Banner ─────────────────────────────────────── -->
+    <div class="px-[5%] pb-24">
+        <div class="max-w-4xl mx-auto text-center p-14 rounded-[3rem] relative overflow-hidden"
+            style="background:linear-gradient(135deg,#003d20 0%,#006837 50%,#00521e 100%);border:1px solid rgba(0,168,89,0.4)">
+            <div class="absolute inset-0 opacity-10" style="background:radial-gradient(circle at 70% 30%,#00ff88,transparent 60%)"></div>
+            <div class="relative z-10">
+                <h2 class="font-outfit text-4xl font-black text-white mb-4">Ready to Compete?</h2>
+                <p class="text-green-200 font-medium mb-8 max-w-lg mx-auto">
+                    Join thousands of Kenyan students and schools already competing on the KSTL platform.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'users:register' %}"
+                        class="px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider text-white transition-all hover:scale-105"
+                        style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4)">
+                        Register for Free
+                    </a>
+                    {% else %}
+                    <a href="{% url 'users:dashboard' %}"
+                        class="px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider text-white transition-all hover:scale-105"
+                        style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4)">
+                        Go to Dashboard
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'home:tests_list' %}"
+                        class="px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all hover:scale-105"
+                        style="background:white;color:#006837">
+                        Browse Challenges
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function switchTab(tab) {
+        const secInd = document.getElementById('section-individual');
+        const secSch = document.getElementById('section-school');
+        const tabInd = document.getElementById('tab-individual');
+        const tabSch = document.getElementById('tab-school');
+        if (tab === 'individual') {
+            secInd.classList.remove('hidden');
+            secSch.classList.add('hidden');
+            tabInd.style.background = 'linear-gradient(135deg,#006837,#00a859)';
+            tabInd.style.color = 'white';
+            tabSch.style.background = 'transparent';
+            tabSch.style.color = '#94a3b8';
+        } else {
+            secSch.classList.remove('hidden');
+            secInd.classList.add('hidden');
+            tabSch.style.background = 'linear-gradient(135deg,#006837,#00a859)';
+            tabSch.style.color = 'white';
+            tabInd.style.background = 'transparent';
+            tabInd.style.color = '#94a3b8';
+        }
+    }
+
+    function toggleFaq(btn) {
+        const body = btn.nextElementSibling;
+        const icon = btn.querySelector('[data-lucide="chevron-down"]');
+        const isOpen = body.style.display === 'block';
+        document.querySelectorAll('.faq-body').forEach(b => b.style.display = 'none');
+        document.querySelectorAll('#faq [data-lucide="chevron-down"]').forEach(i => i.style.transform = 'rotate(0deg)');
+        if (!isOpen) {
+            body.style.display = 'block';
+            icon.style.transform = 'rotate(180deg)';
+        }
+    }
+</script>
+{% endblock %}

@@ -33,33 +33,50 @@
             </div>
         </div>
         
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-secondary">Active Leagues</div>
-            <div class="text-4xl font-black text-dark mb-2">{{ total_schools }}</div>
-            <div class="text-xs text-slate-400 font-medium italic">Verified schools only</div>
+        <div class="p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden"
+            style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)">
+            <div class="absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl"
+                style="background: rgba(255,255,255,0.15)"></div>
+            <div class="relative z-10">
+                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-4">Active Leagues</div>
+                <div class="text-4xl font-black text-white mb-2">{{ total_schools }}</div>
+                <div class="text-xs text-indigo-200 font-medium italic">Verified schools only</div>
+            </div>
         </div>
 
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-accent">Total Tests</div>
-            <div class="text-4xl font-black text-dark mb-2">{{ total_tests }}</div>
-            <div class="text-xs text-slate-400 font-medium">Global test database</div>
+        <div class="p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden"
+            style="background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)">
+            <div class="absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl"
+                style="background: rgba(255,255,255,0.15)"></div>
+            <div class="relative z-10">
+                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-sky-200 mb-4">Total Tests</div>
+                <div class="text-4xl font-black text-white mb-2">{{ total_tests }}</div>
+                <div class="text-xs text-sky-200 font-medium">Global test database</div>
+            </div>
         </div>
 
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 text-primary">Points Awarded</div>
-            <div class="text-4xl font-black text-dark mb-2">{{ total_points|default:"0" }}</div>
-            <div class="text-xs text-slate-400 font-medium">Total intellectual capital</div>
+        <div class="p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden"
+            style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">
+            <div class="absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl"
+                style="background: rgba(255,255,255,0.15)"></div>
+            <div class="relative z-10">
+                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 mb-4">Points Awarded</div>
+                <div class="text-4xl font-black text-white mb-2">{{ total_points|default:"0" }}</div>
+                <div class="text-xs text-amber-200 font-medium">Total intellectual capital</div>
+            </div>
         </div>
     </div>
 
     <!-- Management Sections -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- User Growth -->
-        <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+        <div class="p-10 rounded-[3rem] shadow-xl"
+            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
             <div class="flex items-center justify-between mb-10">
-                <h3 class="font-outfit text-2xl font-black text-dark">User Demographics</h3>
+                <h3 class="font-outfit text-2xl font-black text-white">User Demographics</h3>
                 <div class="flex gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center cursor-pointer hover:bg-slate-700 transition-colors">
                         <i data-lucide="more-horizontal" size="18" class="text-slate-400"></i>
                     </div>
                 </div>
@@ -68,30 +85,30 @@
             <div class="space-y-12">
                 <div class="space-y-4">
                     <div class="flex justify-between items-center text-sm">
-                        <span class="font-bold text-slate-600">Students</span>
-                        <span class="font-black text-dark">{{ student_count }}</span>
+                        <span class="font-bold text-slate-400">Students</span>
+                        <span class="font-black text-white">{{ student_count }}</span>
                     </div>
-                    <div class="h-3 bg-surface rounded-full overflow-hidden">
+                    <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
                         <div class="h-full bg-primary rounded-full" style="width: {% widthratio student_count total_users 100 %}%"></div>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center text-sm">
-                        <span class="font-bold text-slate-600">Patrons</span>
-                        <span class="font-black text-dark">{{ patron_count }}</span>
+                        <span class="font-bold text-slate-400">Patrons</span>
+                        <span class="font-black text-white">{{ patron_count }}</span>
                     </div>
-                    <div class="h-3 bg-surface rounded-full overflow-hidden">
+                    <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
                         <div class="h-full bg-secondary rounded-full" style="width: {% widthratio patron_count total_users 100 %}%"></div>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center text-sm">
-                        <span class="font-bold text-slate-600">Administrators</span>
-                        <span class="font-black text-dark">{{ admin_count }}</span>
+                        <span class="font-bold text-slate-400">Administrators</span>
+                        <span class="font-black text-white">{{ admin_count }}</span>
                     </div>
-                    <div class="h-3 bg-surface rounded-full overflow-hidden">
+                    <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
                         <div class="h-full bg-accent rounded-full" style="width: {% widthratio admin_count total_users 100 %}%"></div>
                     </div>
                 </div>
@@ -99,25 +116,147 @@
         </div>
 
         <!-- System Logs / Recent Activity -->
-        <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-            <h3 class="font-outfit text-2xl font-black text-dark mb-10">Platform Logs</h3>
+        <div class="p-10 rounded-[3rem] shadow-xl overflow-hidden flex flex-col"
+            style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
+            <h3 class="font-outfit text-2xl font-black text-white mb-10">Platform Logs</h3>
             <div class="flex-1 space-y-6">
                 {% for log in recent_registrations %}
                 <div class="flex items-center gap-4 group">
                     <div class="w-2 h-2 rounded-full bg-primary opacity-50 group-hover:scale-150 transition-transform"></div>
                     <div class="flex-1">
-                        <p class="text-sm font-bold text-dark">New {{ log.role }} registered: {{ log.email }}</p>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ log.date_joined|timesince }} ago</p>
+                        <p class="text-sm font-bold text-slate-200">New {{ log.role }} registered: {{ log.email }}</p>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">{{ log.date_joined|timesince }} ago</p>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-slate-400 text-center py-20 font-medium">No recent activity detected.</p>
+                <p class="text-slate-500 text-center py-20 font-medium">No recent activity detected.</p>
                 {% endfor %}
             </div>
-            <button class="w-full mt-10 py-5 rounded-2xl bg-surface border border-slate-100 text-slate-500 font-bold hover:bg-slate-50 transition-colors uppercase tracking-widest text-[10px]">
+            <button
+                class="w-full mt-10 py-5 rounded-2xl border border-slate-700 text-slate-400 font-bold hover:bg-slate-800 transition-colors uppercase tracking-widest text-[10px]">
                 Explore Audit Trails
             </button>
         </div>
     </div>
+<!-- Test Stats Card -->
+<div class="mt-8 p-10 rounded-[3rem] shadow-xl"
+    style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155">
+
+    <!-- Header Row -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+        <div>
+            <h3 class="font-outfit text-2xl font-black text-white">Test Stats</h3>
+            <p class="text-slate-500 text-sm mt-1">Analytics across all trivia tests</p>
+        </div>
+        <!-- Summary Badges -->
+        <div class="flex flex-wrap gap-4">
+            <div class="px-5 py-3 rounded-2xl text-center"
+                style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3)">
+                <div class="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Total Sessions</div>
+                <div class="text-xl font-black text-white">{{ total_sessions }}</div>
+            </div>
+            <div class="px-5 py-3 rounded-2xl text-center"
+                style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25)">
+                <div class="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Avg Score</div>
+                <div class="text-xl font-black text-white">{{ overall_avg_score|floatformat:1 }}%</div>
+            </div>
+            <div class="px-5 py-3 rounded-2xl text-center"
+                style="background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25)">
+                <div class="text-[10px] font-black uppercase tracking-widest text-amber-400 mb-1">Highest Score</div>
+                <div class="text-xl font-black text-white">{{ overall_highest_score }}%</div>
+            </div>
+            <div class="px-5 py-3 rounded-2xl text-center"
+                style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25)">
+                <div class="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">Lowest Score</div>
+                <div class="text-xl font-black text-white">{{ overall_lowest_score }}%</div>
+            </div>
+            {% if most_popular_test %}
+            <div class="px-5 py-3 rounded-2xl text-center"
+                style="background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.25)">
+                <div class="text-[10px] font-black uppercase tracking-widest text-violet-400 mb-1">Most Popular</div>
+                <div class="text-sm font-black text-white truncate max-w-[120px]">{{ most_popular_test.name }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Per-Test Table -->
+    {% if test_stats %}
+    <div class="overflow-x-auto rounded-2xl" style="border: 1px solid #1e293b">
+        <table class="w-full text-sm">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.04)">
+                    <th class="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Test
+                        Name</th>
+                    <th class="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Difficulty</th>
+                    <th class="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Times Taken</th>
+                    <th class="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Avg Score</th>
+                    <th class="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Highest</th>
+                    <th class="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Lowest</th>
+                    <th class="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Status</th>
+                    <th class="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+                {% for test in test_stats %}
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-200">{{ test.name }}</td>
+                    <td class="px-6 py-4">
+                        {% if test.difficulty == 'easy' %}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                            style="background: rgba(16,185,129,0.15); color: #34d399">Easy</span>
+                        {% elif test.difficulty == 'medium' %}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                            style="background: rgba(245,158,11,0.15); color: #fbbf24">Medium</span>
+                        {% else %}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                            style="background: rgba(239,68,68,0.15); color: #f87171">Hard</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center font-black text-indigo-400">{{ test.times_taken }}</td>
+                    <td class="px-6 py-4 text-center font-bold text-white">
+                        {% if test.avg_score %}{{ test.avg_score|floatformat:1 }}%{% else %}&mdash;{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center font-bold text-emerald-400">
+                        {% if test.highest_score %}{{ test.highest_score }}%{% else %}&mdash;{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center font-bold text-red-400">
+                        {% if test.lowest_score %}{{ test.lowest_score }}%{% else %}&mdash;{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if test.is_active %}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                            style="background: rgba(16,185,129,0.15); color: #34d399">Active</span>
+                        {% else %}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                            style="background: rgba(100,116,139,0.2); color: #94a3b8">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <a href="{% url 'home:test_analytics' test.pk %}"
+                            class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors"
+                            style="background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.25)">
+                            <i data-lucide="bar-chart-2" size="12"></i> Analytics
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <p class="text-slate-500 font-medium">No tests found in the system.</p>
+    </div>
+    {% endif %}
+</div>
+
 </div>
 {% endblock %}
